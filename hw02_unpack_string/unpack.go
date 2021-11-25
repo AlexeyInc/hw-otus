@@ -35,7 +35,7 @@ func isBacktickString(str string) bool {
 
 func validateBacktickString(str string) error {
 	for i := range str {
-		if str[i] == '\\' && i+1 < len(str)-1 {
+		if str[i] == '\\' && i+1 < len(str) {
 			shieldingChar := str[i+1]
 
 			if (shieldingChar < 48 || shieldingChar > 57) && shieldingChar != 92 {

@@ -50,7 +50,7 @@ func unpackBacktickString(inputStr string) string {
 	var result strings.Builder
 	i := 0
 	for ; i < len(inputStr); i++ {
-		if isCharSlash(inputStr[i]) {
+		if inputStr[i] == charSlash {
 			addNewStr := makeShielding(i, inputStr)
 			i++
 			result.WriteString(addNewStr)
@@ -61,10 +61,6 @@ func unpackBacktickString(inputStr string) string {
 	return result.String()
 }
 
-func isCharSlash(s byte) bool {
-	return s == charSlash
-}
-
 func makeShielding(i int, str string) string {
 	if i+1 > len(str)-1 {
 		return ""
@@ -72,7 +68,6 @@ func makeShielding(i int, str string) string {
 	if i+2 > len(str)-1 || !unicode.IsDigit([]rune(str)[i+2]) {
 		return string(str[i+1])
 	}
-
 	var resultStr string
 	if numRep, err := strconv.Atoi(string(str[i+2])); err == nil {
 		resultStr = strings.Repeat(string(str[i+1]), numRep)
@@ -97,7 +92,6 @@ func validateQuotedString(str string) error {
 
 func unpackQuotedString(inputStr string) string {
 	var resultStr strings.Builder
-
 	for i, v := range inputStr {
 		if unicode.IsDigit(v) {
 			if numRep, err := strconv.Atoi(string(inputStr[i])); err == nil {
@@ -114,7 +108,6 @@ func unpackQuotedString(inputStr string) string {
 func requireWithoutNumbers(str string) bool {
 	strArr := []rune(str)
 	countDigit := 0
-
 	for i := 0; i < len(strArr); i++ {
 		if unicode.IsDigit(strArr[i]) {
 			countDigit++

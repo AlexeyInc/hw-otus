@@ -19,6 +19,8 @@ func TestUnpack(t *testing.T) {
 		{input: "a0", expected: ""},
 		{input: "a1", expected: "a"},
 		{input: "a3a0b0", expected: "aaa"},
+		{input: "*&^$@", expected: "*&^$@"},
+		{input: "*2&4", expected: "**&&&&"},
 
 		{input: `qwe\4\5`, expected: `qwe45`},
 		{input: `qwe\45`, expected: `qwe44444`},

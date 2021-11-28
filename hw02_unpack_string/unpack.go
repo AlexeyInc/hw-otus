@@ -7,9 +7,11 @@ import (
 	"unicode"
 )
 
-const slashDecCode = 92
-const zeroDecCode = 48
-const nineDecCode = 57
+const (
+	slashDecCode = 92
+	zeroDecCode  = 48
+	nineDecCode  = 57
+)
 
 var ErrInvalidString = errors.New("invalid string")
 

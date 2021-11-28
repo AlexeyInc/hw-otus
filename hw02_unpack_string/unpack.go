@@ -7,7 +7,9 @@ import (
 	"unicode"
 )
 
-const charSlash = 92
+const slashDecCode = 92
+const zeroDecCode = 48
+const nineDecCode = 57
 
 var ErrInvalidString = errors.New("invalid string")
 
@@ -38,7 +40,7 @@ func validateBacktickString(str string) error {
 		if str[i] == '\\' && i+1 < len(str) {
 			shieldingChar := str[i+1]
 
-			if (shieldingChar < 48 || shieldingChar > 57) && shieldingChar != 92 {
+			if (shieldingChar < zeroDecCode || shieldingChar > nineDecCode) && shieldingChar != slashDecCode {
 				return ErrInvalidString
 			}
 		}
@@ -50,7 +52,7 @@ func unpackBacktickString(inputStr string) string {
 	var result strings.Builder
 	i := 0
 	for ; i < len(inputStr); i++ {
-		if inputStr[i] == charSlash {
+		if inputStr[i] == slashDecCode {
 			addNewStr := makeShielding(i, inputStr)
 			i++
 			result.WriteString(addNewStr)

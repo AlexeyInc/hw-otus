@@ -54,8 +54,7 @@ func unpackBacktickString(input string) string {
 	var result strings.Builder
 	inputStr := []rune(input)
 	var tempStr string
-	i := 0
-	for ; i < len(inputStr); i++ {
+	for i := 0; i < len(inputStr); i++ {
 		switch {
 		case inputStr[i] == slashDecCode:
 			tempStr = makeShielding(i, inputStr)

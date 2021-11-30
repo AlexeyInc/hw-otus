@@ -50,35 +50,34 @@ func validateBacktickString(str string) error {
 	return nil
 }
 
-func unpackBacktickString(inputStr string) string {
+func unpackBacktickString(input string) string {
 	var result strings.Builder
+	inputStr := []rune(input)
+	var tempStr string
 	i := 0
 	for ; i < len(inputStr); i++ {
-		if inputStr[i] == slashDecCode {
-			addNewStr := makeShielding(i, inputStr)
+		switch {
+		case inputStr[i] == slashDecCode:
+			tempStr = makeShielding(i, inputStr)
 			i++
-			result.WriteString(addNewStr)
-		} else if !unicode.IsDigit([]rune(inputStr)[i]) {
-			result.WriteString(string(inputStr[i]))
+		case unicode.IsDigit(inputStr[i]):
+			numRep, _ := strconv.Atoi(string(inputStr[i]))
+			tempStr = strings.Repeat(string(inputStr[i-1]), numRep)
+		default:
+			tempStr = string(inputStr[i])
+		}
+		if isNextCharNotDigit(i, inputStr) {
+			result.WriteString(tempStr)
 		}
 	}
 	return result.String()
 }
 
-func makeShielding(i int, str string) string {
+func makeShielding(i int, str []rune) string {
 	if i+1 > len(str)-1 {
 		return ""
 	}
-	if i+2 > len(str)-1 || !unicode.IsDigit([]rune(str)[i+2]) {
-		return string(str[i+1])
-	}
-	var resultStr string
-	if numRep, err := strconv.Atoi(string(str[i+2])); err == nil {
-		resultStr = strings.Repeat(string(str[i+1]), numRep)
-	} else {
-		return ""
-	}
-	return resultStr
+	return string(str[i+1])
 }
 
 func validateQuotedString(str string) error {
@@ -94,14 +93,14 @@ func validateQuotedString(str string) error {
 	return nil
 }
 
-func unpackQuotedString(inputStr string) string {
+func unpackQuotedString(input string) string {
 	var resultStr strings.Builder
+	inputStr := []rune(input)
 	for i, v := range inputStr {
 		if unicode.IsDigit(v) {
-			if numRep, err := strconv.Atoi(string(inputStr[i])); err == nil {
-				strRep := string(inputStr[i-1])
-				resultStr.WriteString(strings.Repeat(strRep, numRep))
-			}
+			numRep, _ := strconv.Atoi(string(inputStr[i]))
+			strRep := string(inputStr[i-1])
+			resultStr.WriteString(strings.Repeat(strRep, numRep))
 		} else if isNextCharNotDigit(i, inputStr) {
 			resultStr.WriteString(string(inputStr[i]))
 		}
@@ -125,9 +124,9 @@ func requireWithoutNumbers(str string) bool {
 	return true
 }
 
-func isNextCharNotDigit(i int, str string) bool {
+func isNextCharNotDigit(i int, str []rune) bool {
 	if i+1 > len(str)-1 {
 		return true
 	}
-	return !unicode.IsDigit([]rune(str)[i+1])
+	return !unicode.IsDigit(str[i+1])
 }

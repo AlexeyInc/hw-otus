@@ -129,7 +129,7 @@ func TestTop10(t *testing.T) {
 		require.Equal(t, expected, Top10(lexicographicallyFirst))
 	})
 
-	t.Run("diffrent word forms are different words", func(t *testing.T) {
+	t.Run("different word forms are different words", func(t *testing.T) {
 		expected := []string{
 			"banana",        // 3
 			"banana,",       // 3

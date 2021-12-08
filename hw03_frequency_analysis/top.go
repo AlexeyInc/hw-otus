@@ -12,23 +12,22 @@ type wordFrequency struct {
 	Value int
 }
 
-func Top10(input string) (result []string) {
+func Top10(input string) []string {
+	var result []string
 	splitedInput := strings.Fields(input)
 
 	wordsFreq := calcWordsFreq(splitedInput)
 
 	sortedWords := sortWordsByFreq(wordsFreq)
 
-	for i := 0; i < len(sortedWords); i++ {
-		if maxNumOfWords < i+1 {
-			break
-		}
+	for i := 0; i < len(sortedWords) && maxNumOfWords > i; i++ {
 		result = append(result, sortedWords[i].Key)
 	}
 	return result
 }
 
-func calcWordsFreq(words []string) (wordsFreq []wordFrequency) {
+func calcWordsFreq(words []string) []wordFrequency {
+	var wordsFreq []wordFrequency
 	wordsMap := make(map[string]int)
 	for _, k := range words {
 		wordsMap[k]++
@@ -41,23 +40,23 @@ func calcWordsFreq(words []string) (wordsFreq []wordFrequency) {
 
 func sortWordsByFreq(words []wordFrequency) []wordFrequency {
 	sort.Slice(words, func(i, j int) bool {
-		if words[i].Value == words[j].Value {
-			frstWord := []rune(words[i].Key)
-			secWord := []rune(words[j].Key)
-			var shorterWord []rune
-			if len(frstWord) < len(secWord) {
-				shorterWord = frstWord
-			} else {
-				shorterWord = secWord
-			}
-			for i := 0; i < len(shorterWord); i++ {
-				if frstWord[i] != secWord[i] {
-					return frstWord[i] < secWord[i]
-				}
-			}
-			return len(frstWord) < len(secWord)
+		if words[i].Value != words[j].Value {
+			return words[i].Value > words[j].Value
 		}
-		return words[i].Value > words[j].Value
+		frstWord := []rune(words[i].Key)
+		secWord := []rune(words[j].Key)
+		var shorterWord []rune
+		if len(frstWord) < len(secWord) {
+			shorterWord = frstWord
+		} else {
+			shorterWord = secWord
+		}
+		for i := 0; i < len(shorterWord); i++ {
+			if frstWord[i] != secWord[i] {
+				return frstWord[i] < secWord[i]
+			}
+		}
+		return len(frstWord) < len(secWord)
 	})
 	return words
 }

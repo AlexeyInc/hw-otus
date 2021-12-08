@@ -27,7 +27,7 @@ func Top10(input string) []string {
 }
 
 func calcWordsFreq(words []string) []wordFrequency {
-	var wordsFreq []wordFrequency
+	wordsFreq := make([]wordFrequency, 0)
 	wordsMap := make(map[string]int)
 	for _, k := range words {
 		wordsMap[k]++

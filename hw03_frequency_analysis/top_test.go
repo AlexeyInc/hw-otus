@@ -43,6 +43,17 @@ var text = `Как видите, он  спускается  по  лестни�
 	посидеть у огня и послушать какую-нибудь интересную сказку.
 		В этот вечер...`
 
+var lessThan10Words = `No hell below us
+					   Above us only sky`
+
+var difBytesChars = `some 史籀 宣 史籀 some english words and at the end some українські літери`
+
+var lexicographicallyFirst = "dog below above above above below below dog dog"
+
+var wordForms = "banana. banana, banana banana, banana-banana banana, banana - banana banana."
+
+var capitalAndSmallLetter = "Word word Word word Word word Word word Word word"
+
 func TestTop10(t *testing.T) {
 	t.Run("no words in empty string", func(t *testing.T) {
 		require.Len(t, Top10(""), 0)
@@ -78,5 +89,62 @@ func TestTop10(t *testing.T) {
 			}
 			require.Equal(t, expected, Top10(text))
 		}
+	})
+
+	t.Run("less than 10 words test", func(t *testing.T) {
+		expected := []string{
+			"us",    // 2
+			"Above", // 1
+			"No",    // 1
+			"below", // 1
+			"hell",  // 1
+			"only",  // 1
+			"sky",   // 1
+		}
+		require.Equal(t, expected, Top10(lessThan10Words))
+	})
+
+	t.Run("characters with different amount of bytes", func(t *testing.T) {
+		expected := []string{
+			"some",       // 3
+			"史籀",         // 2
+			"and",        // 1
+			"at",         // 1
+			"end",        // 1
+			"english",    // 1
+			"the",        // 1
+			"words",      // 1
+			"літери",     // 1
+			"українські", // 1
+		}
+		require.Equal(t, expected, Top10(difBytesChars))
+	})
+
+	t.Run("lexicographically first words", func(t *testing.T) {
+		expected := []string{
+			"above", // 3
+			"below", // 3
+			"dog",   // 3
+		}
+		require.Equal(t, expected, Top10(lexicographicallyFirst))
+	})
+
+	t.Run("different word forms are different words", func(t *testing.T) {
+		expected := []string{
+			"banana",        // 3
+			"banana,",       // 3
+			"banana.",       // 2
+			"-",             // 1
+			"banana-banana", // 1
+		}
+		require.Equal(t, expected, Top10(wordForms))
+	})
+
+	t.Run("words with capital and a small letter are different", func(t *testing.T) {
+		expected := []string{
+			"Word", // 5
+			"word", // 5
+		}
+		require.Equal(t, expected, Top10(capitalAndSmallLetter))
 	})
 }

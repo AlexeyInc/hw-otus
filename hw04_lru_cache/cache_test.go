@@ -49,8 +49,27 @@ func TestCache(t *testing.T) {
 		require.Nil(t, val)
 	})
 
-	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+	t.Run("delete items due to queue size", func(t *testing.T) {
+		// c := NewCache(3)
+
+		// c.Set("frst", 10)
+		// c.Set("sec", 20)
+		// c.Set("third", 30)
+		// c.Set("fourth", 40)
+
+		// val, ok := c.Get("frst")
+		// require.False(t, ok)
+		// require.Nil(t, val)
+
+		// val, ok = c.Get("sec")
+		// require.True(t, ok)
+		// require.Equal(t, 20, val)
+
+		// c.Set("five", 50)
+
+		// val, ok = c.Get("sec")
+		// require.False(t, ok)
+		// require.Nil(t, val)
 	})
 }
 

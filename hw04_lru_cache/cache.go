@@ -35,7 +35,7 @@ func (c *lruCache) Set(key Key, value interface{}) bool {
 	defer c.Unlock()
 	newItem := &cacheItem{key, value}
 	if v, ok := c.items[key]; ok {
-		c.items[key].Value = newItem
+		v.Value = newItem
 		c.queue.MoveToFront(v)
 		return true
 	}

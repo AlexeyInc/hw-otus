@@ -50,26 +50,54 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("delete items due to queue size", func(t *testing.T) {
-		// c := NewCache(3)
+		c := NewCache(2)
 
-		// c.Set("frst", 10)
-		// c.Set("sec", 20)
-		// c.Set("third", 30)
-		// c.Set("fourth", 40)
+		c.Set("frst", 10)
+		c.Set("sec", 20)
 
-		// val, ok := c.Get("frst")
-		// require.False(t, ok)
-		// require.Nil(t, val)
+		c.Set("third", 30)
+		val, ok := c.Get("frst")
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
 
-		// val, ok = c.Get("sec")
-		// require.True(t, ok)
-		// require.Equal(t, 20, val)
+	t.Run("element that was used the most long ago will be pushed out", func(t *testing.T) {
+		c := NewCache(3)
 
-		// c.Set("five", 50)
+		c.Set("frst", 10)
+		c.Set("sec", 20)
+		c.Set("third", 30)
 
-		// val, ok = c.Get("sec")
-		// require.False(t, ok)
-		// require.Nil(t, val)
+		c.Set("frst", 1)
+		c.Get("third")
+
+		c.Set("fourth", 40)
+
+		val, ok := c.Get("sec")
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
+
+	t.Run("complex scenario", func(t *testing.T) {
+		c := NewCache(3)
+
+		c.Set("frst", 10)
+		c.Set("sec", 20)
+		c.Set("third", 30)
+
+		c.Set("fourth", 40) // "fourth" should throw out last one (which is "frst")
+		val, ok := c.Get("frst")
+		require.False(t, ok)
+		require.Nil(t, val)
+
+		val, ok = c.Get("sec") // "sec" has been moved to first position, now last should be "third"
+		require.True(t, ok)
+		require.Equal(t, 20, val)
+
+		c.Set("five", 50) // "five" should throw out last one (which is "third")
+		val, ok = c.Get("third")
+		require.False(t, ok)
+		require.Nil(t, val)
 	})
 }
 

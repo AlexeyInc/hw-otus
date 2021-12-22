@@ -35,11 +35,8 @@ func (l list) Len() int {
 }
 
 func (l *list) PushFront(v interface{}) *ListItem {
-	newItem := &ListItem{Value: v}
-	if l.head == nil {
-		l.head = newItem
-		l.tail = newItem
-	} else {
+	newItem, first := l.isFirstItem(v)
+	if !first {
 		temp := l.head
 		l.head = newItem
 		l.head.Next = temp
@@ -50,11 +47,8 @@ func (l *list) PushFront(v interface{}) *ListItem {
 }
 
 func (l *list) PushBack(v interface{}) *ListItem {
-	newItem := &ListItem{Value: v}
-	if l.head == nil {
-		l.head = newItem
-		l.tail = newItem
-	} else {
+	newItem, first := l.isFirstItem(v)
+	if !first {
 		temp := l.tail
 		l.tail = newItem
 		l.tail.Prev = temp
@@ -62,6 +56,16 @@ func (l *list) PushBack(v interface{}) *ListItem {
 	}
 	l.length++
 	return newItem
+}
+
+func (l *list) isFirstItem(v interface{}) (*ListItem, bool) {
+	newItem := &ListItem{Value: v}
+	if l.head == nil {
+		l.head = newItem
+		l.tail = newItem
+		return newItem, true
+	}
+	return newItem, false
 }
 
 func (l *list) Remove(i *ListItem) {

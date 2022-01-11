@@ -69,7 +69,7 @@ func executeTask(taskFunc Task,
 	errCh chan error,
 	quitCh chan bool,
 	goroutineCounter chan struct{}) {
-	err := taskFunc()
+	err := taskFunc() //nolint
 
 	ch := doneCh
 	if err != nil {

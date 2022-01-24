@@ -12,6 +12,9 @@ var result = make(chan error)
 
 // Run starts tasks in n goroutines and stops its work when receiving m errors from tasks.
 func Run(tasks []Task, n, m int) error {
+	if len(tasks) == 0 || n == 0 {
+		return nil
+	}
 	goroutineCounter := make(chan struct{}, n)
 
 	doneCh := make(chan error)

@@ -40,12 +40,7 @@ func TestPipeline(t *testing.T) {
 		in := make(Bi)
 		data := []int{1, 2, 3, 4, 5}
 
-		go func() {
-			for _, v := range data {
-				in <- v
-			}
-			close(in)
-		}()
+		go sendDataThroughChan(in, data)
 
 		result := make([]string, 0, 10)
 		start := time.Now()
@@ -73,12 +68,7 @@ func TestPipeline(t *testing.T) {
 			close(done)
 		}()
 
-		go func() {
-			for _, v := range data {
-				in <- v
-			}
-			close(in)
-		}()
+		go sendDataThroughChan(in, data)
 
 		result := make([]string, 0, 10)
 		start := time.Now()
@@ -90,4 +80,75 @@ func TestPipeline(t *testing.T) {
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
+
+	t.Run("empty stages", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3}
+
+		go sendDataThroughChan(in, data)
+
+		result := make([]int, 0, 10)
+		for s := range ExecutePipeline(in, nil) {
+			result = append(result, s.(int))
+		}
+
+		require.Equal(t, data, result)
+	})
+
+	t.Run("stages is nil", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3}
+
+		go sendDataThroughChan(in, data)
+
+		result := make([]int, 0, 10)
+		for s := range ExecutePipeline(in, nil, nil) {
+			result = append(result, s.(int))
+		}
+
+		require.Equal(t, data, result)
+	})
+
+	t.Run("empty stages with done chan", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3}
+		done := make(Bi)
+		close(done)
+
+		go sendDataThroughChan(in, data)
+
+		result := make([]int, 0, 10)
+		for s := range ExecutePipeline(in, done) {
+			result = append(result, s.(int))
+		}
+
+		require.Equal(t, data, result)
+	})
+
+	t.Run("close done but not in chan", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3}
+		done := make(Bi)
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(done)
+		}()
+
+		result := make([]int, 0, 10)
+		for s := range ExecutePipeline(in, done, stages...) {
+			result = append(result, s.(int))
+		}
+
+		require.Len(t, result, 0)
+	})
+}
+
+func sendDataThroughChan(in chan interface{}, data []int) {
+	for _, v := range data {
+		in <- v
+	}
+	close(in)
 }

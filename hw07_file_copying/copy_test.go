@@ -128,7 +128,7 @@ func getFileSize(fPath string) int64 {
 }
 
 func compareFiles(file1, file2 string) bool {
-	var chunkSize = 1024
+	chunkSize := 1024
 
 	f1, err := os.Open(file1)
 	if err != nil {

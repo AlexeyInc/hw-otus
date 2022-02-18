@@ -10,7 +10,7 @@ import (
 
 const newLineSymb byte = byte('\n')
 
-var nullSymb []byte = []byte{0}
+var nullSymb = []byte{0}
 
 type Environment map[string]EnvValue
 
@@ -23,7 +23,6 @@ type EnvValue struct {
 // ReadDir reads a specified directory and returns map of env variables.
 // Variables represented as files where filename is name of variable, file first line is a value.
 func ReadDir(dir string) (Environment, error) {
-
 	sectionItems, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return nil, err

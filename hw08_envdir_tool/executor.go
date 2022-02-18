@@ -11,10 +11,14 @@ var envVarsToAdd = []string{"ADDED=from original env"}
 func RunCmd(cmd []string, env Environment) (returnCode int) {
 	for k, ev := range env {
 		if env[k].NeedRemove {
-			os.Unsetenv(k)
+			if err := os.Unsetenv(k); err != nil {
+				return 0
+			}
 		}
 		if ev.Value != "" {
-			os.Setenv(k, ev.Value)
+			if err := os.Setenv(k, ev.Value); err != nil {
+				return 0
+			}
 		}
 	}
 

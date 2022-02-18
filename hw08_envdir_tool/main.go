@@ -6,6 +6,10 @@ import (
 )
 
 func main() {
+	if os.Args == nil || len(os.Args) < 1 {
+		fmt.Println("Haven't found any args")
+		os.Exit(0)
+	}
 	envVariables, err := ReadDir(os.Args[1])
 	if err != nil {
 		fmt.Println(err)

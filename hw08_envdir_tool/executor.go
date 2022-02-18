@@ -12,12 +12,12 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	for k, ev := range env {
 		if env[k].NeedRemove {
 			if err := os.Unsetenv(k); err != nil {
-				return 0
+				return 1
 			}
 		}
 		if ev.Value != "" {
 			if err := os.Setenv(k, ev.Value); err != nil {
-				return 0
+				return 1
 			}
 		}
 	}
@@ -32,8 +32,8 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		resCmd.Stdout = os.Stdout
 
 		if err := resCmd.Run(); err != nil {
-			return 0
+			return 1
 		}
 	}
-	return 1
+	return 0
 }

@@ -47,9 +47,11 @@ func TestValidate(t *testing.T) {
 	}{
 		{
 			// default valid case for User
-			in: User{"Some___Random___Id___With___Length36",
+			in: User{
+				"Some___Random___Id___With___Length36",
 				"Alex", 24, "test@mail.com",
-				"admin", []string{"12345678901"},
+				"admin",
+				[]string{"12345678901"},
 				json.RawMessage(`{"precomputed": true}`),
 			},
 			expectedErr: errors.New(""),
@@ -71,9 +73,11 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			// non valid Id, Age, Email, Role, Phones
-			in: User{"someRandomIdWithLength24",
+			in: User{
+				"someRandomIdWithLength24",
 				"Alex", 51, "test@mail",
-				"testRole", []string{"123"},
+				"testRole",
+				[]string{"123"},
 				json.RawMessage(`{"precomputed": true}`),
 			},
 			expectedErr: errors.New(
@@ -90,9 +94,11 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			// non valid Id and Role
-			in: User{"someRandomIdWithLength24",
+			in: User{
+				"someRandomIdWithLength24",
 				"Alex", 24, "test@mail.com",
-				"otherRole", []string{"12345678901"},
+				"otherRole",
+				[]string{"12345678901"},
 				json.RawMessage(`{"precomputed": true}`),
 			},
 			expectedErr: errors.New(
@@ -144,7 +150,6 @@ func TestValidate(t *testing.T) {
 			_ = tt
 		})
 	}
-
 }
 
 func formatErrMsg(err string) string {

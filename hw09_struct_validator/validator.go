@@ -9,13 +9,15 @@ import (
 	"strings"
 )
 
-const validateTag string = "validate:"
-const lenTag string = "len:"
-const inTag string = "in:"
-const regexpTag string = "regexp:"
-const minTag string = "min:"
-const maxTag string = "max:"
-const separatorSymb string = "|"
+const (
+	validateTag   string = "validate:"
+	lenTag        string = "len:"
+	inTag         string = "in:"
+	regexpTag     string = "regexp:"
+	minTag        string = "min:"
+	maxTag        string = "max:"
+	separatorSymb string = "|"
+)
 
 type ValidationError struct {
 	Field string
@@ -50,7 +52,7 @@ func Validate(v interface{}) error {
 		fieldReflectType := reflectType.Field(i)
 		fieldReflectValue := reflectValue.Field(i)
 		fieldTag := fieldReflectType.Tag
-		fieldTagStr := strings.Replace(string(fieldTag), "\\\\", "\\", -1)
+		fieldTagStr := strings.ReplaceAll(string(fieldTag), "\\\\", "\\")
 
 		if requires := getRequirements(fieldTagStr); requires != "" {
 			errors := getValidationErrors(fieldReflectType, fieldReflectValue, requires)
@@ -66,11 +68,10 @@ func Validate(v interface{}) error {
 func getRequirements(require string) string {
 	if !strings.Contains(require, validateTag) {
 		return ""
-	} else {
-		fromIndx := strings.Index(require, validateTag)
-		r := require[fromIndx+len(validateTag):]
-		return r
 	}
+	fromIndx := strings.Index(require, validateTag)
+	r := require[fromIndx+len(validateTag):]
+	return r
 }
 
 func getValidationErrors(fieldT reflect.StructField, fieldV reflect.Value, require string) []ValidationError {
@@ -81,7 +82,7 @@ func getValidationErrors(fieldT reflect.StructField, fieldV reflect.Value, requi
 	isValidField := true
 	var err error
 
-	switch fieldV.Kind() {
+	switch fieldV.Kind() { //nolint
 	case reflect.String:
 		isValidField, err = validString(fieldV.String(), requirements)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -89,7 +90,7 @@ func getValidationErrors(fieldT reflect.StructField, fieldV reflect.Value, requi
 	case reflect.Slice:
 		isValidField, err = validSlice(fieldV, requirements)
 	default:
-		fmt.Println("Can't define type of field") //TODO: remove after tests
+		fmt.Println("Can't define type of field") // TODO: remove after tests
 	}
 	if !isValidField {
 		validationErros = append(validationErros, ValidationError{
@@ -105,7 +106,6 @@ func validString(str string, requirements []string) (bool, error) {
 	var resultErrors strings.Builder
 
 	for _, req := range requirements {
-		//check len:
 		if indx := strings.Index(req, lenTag); indx != -1 {
 			lenReqStr := req[indx+len(lenTag):]
 			lenReq, err := strconv.Atoi(lenReqStr)
@@ -118,7 +118,7 @@ func validString(str string, requirements []string) (bool, error) {
 				addErrMsg(&resultErrors, "string len should be: "+strconv.Itoa(lenReq))
 			}
 		}
-		//check in:
+
 		if indx := strings.Index(req, inTag); indx != -1 {
 			inReqStr := req[indx+len(inTag):]
 			inReqSlice := strings.Split(inReqStr, ",")
@@ -134,7 +134,7 @@ func validString(str string, requirements []string) (bool, error) {
 				addErrMsg(&resultErrors, "value should be in: "+strings.Join(inReqSlice, ","))
 			}
 		}
-		//check regexp:
+
 		if indx := strings.Index(req, regexpTag); indx != -1 {
 			pattern := req[indx+len(regexpTag):]
 			match, _ := regexp.MatchString(pattern, str)
@@ -162,28 +162,26 @@ func validInt(num int, requirements []string) (bool, error) {
 			if err != nil {
 				isValidNum = false
 				addErrMsg(&resultErrors, err.Error())
-			}
-			if num < minReq {
+			} else if num < minReq {
 				isValidNum = false
 				addErrMsg(&resultErrors, "min should be: "+strconv.Itoa(minReq))
 			}
 			continue
 		}
-		//check max:
+		// check max:
 		if indx := strings.Index(req, maxTag); indx != -1 {
 			maxReqStr := req[indx+len(maxTag):]
 			maxReq, err := strconv.Atoi(maxReqStr)
 			if err != nil {
 				isValidNum = false
 				addErrMsg(&resultErrors, err.Error())
-			}
-			if num > maxReq {
+			} else if num > maxReq {
 				isValidNum = false
 				addErrMsg(&resultErrors, "max should be: "+strconv.Itoa(maxReq))
 			}
 			continue
 		}
-		//check in:
+		// check in:
 		matchIndxes := regexp.MustCompile("^" + inTag).FindStringIndex(req)
 		if matchIndxes != nil {
 			stringsReq := strings.Split(req[matchIndxes[1]:], ",")
@@ -219,7 +217,7 @@ func validSlice(items reflect.Value, requirements []string) (bool, error) {
 
 	for i := 0; i < items.Len(); i++ {
 		item := items.Index(i)
-		switch item.Kind() {
+		switch item.Kind() { //nolint
 		case reflect.String:
 			_, err = validString(item.String(), requirements)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -227,7 +225,7 @@ func validSlice(items reflect.Value, requirements []string) (bool, error) {
 		case reflect.Uint8:
 			_, err = validInt(int(item.Uint()), requirements)
 		default:
-			fmt.Println("Type not defined <-") //TODO: remove after tests
+			fmt.Println("Type not defined <-") // TODO: remove after tests
 		}
 		if err != nil {
 			isValidSlice = false
@@ -237,9 +235,8 @@ func validSlice(items reflect.Value, requirements []string) (bool, error) {
 
 	if !isValidSlice {
 		return false, errors.New(resultErrors.String())
-	} else {
-		return true, nil
 	}
+	return true, nil
 }
 
 func addErrMsg(erros *strings.Builder, errText string) {

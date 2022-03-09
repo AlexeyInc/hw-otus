@@ -18,5 +18,5 @@ func init() {
 
 func main() {
 	flag.Parse()
-	// Place your code here.
+	Copy(from, to, offset, limit)
 }

@@ -14,7 +14,6 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 			if err := os.Unsetenv(k); err != nil {
 				return 1
 			}
-			continue
 		}
 		if ev.Value != "" {
 			if err := os.Setenv(k, ev.Value); err != nil {

@@ -31,32 +31,33 @@ func ReadDir(dir string) (Environment, error) {
 	envVars := make(Environment)
 
 	for _, item := range sectionItems {
-		if !item.IsDir() {
-			needRemove := false
-
-			fileName := validateFileName(item.Name())
-
-			if item.Size() == 0 {
-				needRemove = true
-				envVars[fileName] = EnvValue{"", needRemove}
-				continue
-			}
-
-			_, exist := os.LookupEnv(fileName)
-			if exist {
-				needRemove = true
-			}
-
-			filePath := filepath.Join(dir, fileName)
-			fileData, err := os.ReadFile(filePath)
-			if err != nil {
-				return nil, err
-			}
-
-			fileDataStr := validateFileData(fileData)
-
-			envVars[fileName] = EnvValue{fileDataStr, needRemove}
+		if item.IsDir() {
+			continue
 		}
+		needRemove := false
+
+		fileName := validateFileName(item.Name())
+
+		if item.Size() == 0 {
+			needRemove = true
+			envVars[fileName] = EnvValue{"", needRemove}
+			continue
+		}
+
+		_, exist := os.LookupEnv(fileName)
+		if exist {
+			needRemove = true
+		}
+
+		filePath := filepath.Join(dir, fileName)
+		fileData, err := os.ReadFile(filePath)
+		if err != nil {
+			return nil, err
+		}
+
+		fileDataStr := validateFileData(fileData)
+
+		envVars[fileName] = EnvValue{fileDataStr, needRemove}
 	}
 
 	return envVars, nil
@@ -73,6 +74,6 @@ func validateFileData(data []byte) string {
 		data = data[:newLineIndx]
 	}
 	data = bytes.ReplaceAll(data, nullSymb, []byte{newLineSymb})
-	resultStr := strings.TrimRight(string(data), "	 ")
+	resultStr := strings.TrimRight(string(data), "\t")
 	return resultStr
 }

@@ -28,12 +28,10 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	}
 	defer fDest.Close()
 
-	var fSrcInfo os.FileInfo
-	v, err := fSrc.Stat()
+	fSrcInfo, err := fSrc.Stat()
 	if err != nil {
 		return ErrUnsupportedFile
 	}
-	fSrcInfo = v
 
 	if err := addOffset(fSrc, fSrcInfo, offset); err != nil {
 		return err

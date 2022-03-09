@@ -74,6 +74,6 @@ func validateFileData(data []byte) string {
 		data = data[:newLineIndx]
 	}
 	data = bytes.ReplaceAll(data, nullSymb, []byte{newLineSymb})
-	resultStr := strings.TrimRight(string(data), "\t")
+	resultStr := strings.TrimRight(string(data), "	 ")
 	return resultStr
 }

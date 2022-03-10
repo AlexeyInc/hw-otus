@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"regexp"
 	"strings"
 )
 
@@ -29,15 +28,15 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	return countDomains(u, domain)
 }
 
-type users [100_000]User
-
-func getUsers(r io.Reader) (result users, err error) {
+func getUsers(r io.Reader) (result []User, err error) {
 	content, err := ioutil.ReadAll(r)
 	if err != nil {
 		return
 	}
 
 	lines := strings.Split(string(content), "\n")
+	result = make([]User, len(lines))
+
 	for i, line := range lines {
 		var user User
 		if err = json.Unmarshal([]byte(line), &user); err != nil {
@@ -48,16 +47,13 @@ func getUsers(r io.Reader) (result users, err error) {
 	return
 }
 
-func countDomains(u users, domain string) (DomainStat, error) {
+func countDomains(u []User, domain string) (DomainStat, error) {
 	result := make(DomainStat)
 
 	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
-		if err != nil {
-			return nil, err
-		}
+		contain := strings.Contains(user.Email, "."+domain)
 
-		if matched {
+		if contain {
 			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
 			num++
 			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num

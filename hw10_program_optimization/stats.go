@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const newLineByte = 10
+
 type User struct {
 	ID       int
 	Name     string
@@ -34,15 +36,13 @@ func getUsers(r io.Reader) (result []User, err error) {
 		return
 	}
 
-	lines := strings.Split(string(content), "\n")
-	result = make([]User, len(lines))
+	countUsers := countByte(content, newLineByte)
+	result = make([]User, countUsers)
 
-	for i, line := range lines {
-		var user User
-		if err = json.Unmarshal([]byte(line), &user); err != nil {
-			return
-		}
-		result[i] = user
+	resContent := "[" + strings.ReplaceAll(string(content), "\n", ",") + "]"
+
+	if err = json.Unmarshal([]byte(resContent), &result); err != nil {
+		return
 	}
 	return
 }
@@ -60,4 +60,13 @@ func countDomains(u []User, domain string) (DomainStat, error) {
 		}
 	}
 	return result, nil
+}
+
+func countByte(input []byte, search byte) (count int) {
+	for _, v := range input {
+		if v == search {
+			count++
+		}
+	}
+	return
 }

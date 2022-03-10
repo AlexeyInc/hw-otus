@@ -1,23 +1,24 @@
 package hw10programoptimization
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"strings"
+
+	"github.com/pquerna/ffjson/ffjson"
 )
 
 const newLineByte = 10
 
 type User struct {
-	ID       int
-	Name     string
-	Username string
-	Email    string
-	Phone    string
-	Password string
-	Address  string
+	ID       int    `json:"Id"`
+	Name     string `json:"Name"`
+	Username string `json:"Username"`
+	Email    string `json:"Email"`
+	Phone    string `json:"Phone"`
+	Password string `json:"Password"`
+	Address  string `json:"Address"`
 }
 
 type DomainStat map[string]int
@@ -37,11 +38,11 @@ func getUsers(r io.Reader) (result []User, err error) {
 	}
 
 	countUsers := countByte(content, newLineByte)
-	result = make([]User, countUsers)
+	result = make([]User, 0, countUsers)
 
 	resContent := "[" + strings.ReplaceAll(string(content), "\n", ",") + "]"
 
-	if err = json.Unmarshal([]byte(resContent), &result); err != nil {
+	if err = ffjson.Unmarshal([]byte(resContent), &result); err != nil {
 		return
 	}
 	return

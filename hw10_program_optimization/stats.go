@@ -5,20 +5,17 @@ import (
 	"io"
 	"io/ioutil"
 	"strings"
-
-	"github.com/pquerna/ffjson/ffjson"
 )
 
-const newLineByte = 10
-
+//easyjson:json
 type User struct {
-	ID       int    `json:"Id"`
-	Name     string `json:"Name"`
-	Username string `json:"Username"`
-	Email    string `json:"Email"`
-	Phone    string `json:"Phone"`
-	Password string `json:"Password"`
-	Address  string `json:"Address"`
+	ID       int
+	Name     string
+	Username string
+	Email    string
+	Phone    string
+	Password string
+	Address  string
 }
 
 type DomainStat map[string]int
@@ -37,14 +34,15 @@ func getUsers(r io.Reader) (result []User, err error) {
 		return
 	}
 
-	countUsers := countByte(content, newLineByte)
-	result = make([]User, 0, countUsers)
+	lines := strings.Split(string(content), "\n")
+	result = make([]User, len(lines))
 
-	resContent := "[" + strings.ReplaceAll(string(content), "\n", ",") + "]"
-
-	if err = ffjson.Unmarshal([]byte(resContent), &result); err != nil {
-		return
+	for i, line := range lines {
+		if err = result[i].UnmarshalJSON([]byte(line)); err != nil {
+			return
+		}
 	}
+
 	return
 }
 
@@ -61,13 +59,4 @@ func countDomains(u []User, domain string) (DomainStat, error) {
 		}
 	}
 	return result, nil
-}
-
-func countByte(input []byte, search byte) (count int) {
-	for _, v := range input {
-		if v == search {
-			count++
-		}
-	}
-	return
 }

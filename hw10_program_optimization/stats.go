@@ -1,7 +1,7 @@
 package hw10programoptimization
 
 import (
-	"bytes"
+	json "encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -30,46 +30,22 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 
 type users [100_000]User
 
-func getUsers(r io.Reader) (users, error) {
-	var usr users
+func getUsers(r io.Reader) (result users, err error) {
+	dec := json.NewDecoder(r)
 
-	buf := bytes.Buffer{}
-	buf.Grow(len(usr))
+	var u User
+	i := 0
+	for dec.More() {
 
-	if _, err := io.Copy(&buf, r); err != nil {
-		return usr, err
-	}
-
-	textBytes := buf.Bytes()
-
-	lineIndxs := [len(usr)]struct {
-		start, end int
-	}{}
-
-	lineIndxs[0].start = 0
-	j := 0
-	for i, v := range textBytes {
-		if v == 10 {
-			lineIndxs[j].end = i
-			j++
-			if i < len(textBytes) {
-				lineIndxs[j].start = i + 1
-			}
+		err = dec.Decode(&u)
+		if err != nil {
+			return
 		}
+		result[i] = u
+		i++
 	}
 
-	for i := 0; i < len(usr); i++ {
-		startLineIndx := lineIndxs[i].start
-		endLineIndx := lineIndxs[i].end
-		if endLineIndx != 0 {
-			usr[i].UnmarshalJSON(textBytes[startLineIndx:endLineIndx])
-			continue
-		}
-		usr[i].UnmarshalJSON(textBytes[startLineIndx:])
-		return usr, nil
-	}
-
-	return usr, nil
+	return
 }
 
 func countDomains(u [100000]User, domain string) (DomainStat, error) {

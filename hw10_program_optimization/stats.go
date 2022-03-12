@@ -36,7 +36,6 @@ func getUsers(r io.Reader) (result users, err error) {
 	var u User
 	i := 0
 	for dec.More() {
-
 		err = dec.Decode(&u)
 		if err != nil {
 			return

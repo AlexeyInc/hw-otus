@@ -1,9 +1,9 @@
 package hw10programoptimization
 
 import (
+	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 )
 
@@ -28,25 +28,51 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	return countDomains(u, domain)
 }
 
-func getUsers(r io.Reader) (result []User, err error) {
-	content, err := ioutil.ReadAll(r)
-	if err != nil {
-		return
+type users [100_000]User
+
+func getUsers(r io.Reader) (users, error) {
+	var usr users
+
+	buf := bytes.Buffer{}
+	buf.Grow(len(usr))
+
+	if _, err := io.Copy(&buf, r); err != nil {
+		return usr, err
 	}
 
-	lines := strings.Split(string(content), "\n")
-	result = make([]User, len(lines))
+	textBytes := buf.Bytes()
 
-	for i, line := range lines {
-		if err = result[i].UnmarshalJSON([]byte(line)); err != nil {
-			return
+	lineIndxs := [len(usr)]struct {
+		start, end int
+	}{}
+
+	lineIndxs[0].start = 0
+	j := 0
+	for i, v := range textBytes {
+		if v == 10 {
+			lineIndxs[j].end = i
+			j++
+			if i < len(textBytes) {
+				lineIndxs[j].start = i + 1
+			}
 		}
 	}
 
-	return
+	for i := 0; i < len(usr); i++ {
+		startLineIndx := lineIndxs[i].start
+		endLineIndx := lineIndxs[i].end
+		if endLineIndx != 0 {
+			usr[i].UnmarshalJSON(textBytes[startLineIndx:endLineIndx])
+			continue
+		}
+		usr[i].UnmarshalJSON(textBytes[startLineIndx:])
+		return usr, nil
+	}
+
+	return usr, nil
 }
 
-func countDomains(u []User, domain string) (DomainStat, error) {
+func countDomains(u [100000]User, domain string) (DomainStat, error) {
 	result := make(DomainStat)
 
 	for _, user := range u {

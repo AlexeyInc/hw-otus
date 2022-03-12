@@ -33,15 +33,13 @@ type users [100_000]User
 func getUsers(r io.Reader) (result users, err error) {
 	dec := json.NewDecoder(r)
 
-	var u User
 	i := 0
 	for dec.More() {
-		err = dec.Decode(&u)
+		err = dec.Decode(&result[i])
+		i++
 		if err != nil {
 			return
 		}
-		result[i] = u
-		i++
 	}
 
 	return

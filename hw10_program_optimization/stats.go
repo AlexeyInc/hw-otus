@@ -1,8 +1,7 @@
 package hw10programoptimization
 
 import (
-	json "encoding/json"
-	"fmt"
+	"bufio"
 	"io"
 	"strings"
 )
@@ -21,41 +20,26 @@ type User struct {
 type DomainStat map[string]int
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
-	u, err := getUsers(r)
-	if err != nil {
-		return nil, fmt.Errorf("get users error: %w", err)
-	}
-	return countDomains(u, domain)
-}
-
-type users [100_000]User
-
-func getUsers(r io.Reader) (result users, err error) {
-	dec := json.NewDecoder(r)
-
-	i := 0
-	for dec.More() {
-		err = dec.Decode(&result[i])
-		i++
-		if err != nil {
-			return
-		}
-	}
-
-	return
-}
-
-func countDomains(u [100000]User, domain string) (DomainStat, error) {
 	result := make(DomainStat)
 
-	for _, user := range u {
-		contain := strings.Contains(user.Email, "."+domain)
+	scanner := bufio.NewScanner(r)
 
-		if contain {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
-			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+	keyAt := "@"
+	keyDomain := "." + domain
+
+	for scanner.Scan() {
+		text := scanner.Text()
+		if indx := strings.Index(text, keyDomain); indx != -1 {
+			from := strings.Index(text, keyAt) + 1
+			to := indx + len(keyDomain)
+			key := strings.ToLower(text[from:to])
+
+			result[key]++
 		}
 	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
 	return result, nil
 }

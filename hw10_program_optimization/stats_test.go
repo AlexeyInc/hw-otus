@@ -1,5 +1,5 @@
-//go:build !bench
-// +build !bench
+//go:build bench
+// +build bench
 
 package hw10programoptimization
 
@@ -34,8 +34,10 @@ func TestGetDomainStat(t *testing.T) {
 	})
 
 	t.Run("check invalid input", func(t *testing.T) {
-		_, err := GetDomainStat(bytes.NewBufferString("wrong_data"), "com")
-		require.Error(t, err)
+		domains, err := GetDomainStat(bytes.NewBufferString("wrong_data"), "com")
+
+		require.Nil(t, err)
+		require.Equal(t, 0, len(domains))
 	})
 
 	t.Run("find 'gov'", func(t *testing.T) {

@@ -25,22 +25,21 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	scanner := bufio.NewScanner(r)
 
 	keyAt := "@"
-	keyEmail := "Email\":\""
-	keyComma := "\",\""
+	u := User{}
 
 	for scanner.Scan() {
 		text := scanner.Text()
 
-		if indx := strings.Index(text, keyEmail); indx != -1 {
-			indxStart := indx + +len(keyEmail)
-			offsetEmail := strings.Index(text[indxStart:], keyComma)
-			emailText := text[indxStart : indxStart+offsetEmail]
+		if indx := strings.Index(text, domain); indx != -1 {
+			u.UnmarshalJSON([]byte(text))
 
-			if strings.Contains(emailText, domain) {
-				from := strings.Index(emailText, keyAt) + 1
-				key := strings.ToLower(emailText[from:])
-				result[key]++
+			if i := strings.Index(u.Email, domain); i == -1 {
+				continue
 			}
+
+			from := strings.Index(u.Email, keyAt) + 1
+			key := strings.ToLower(u.Email[from:])
+			result[key]++
 		}
 	}
 	if err := scanner.Err(); err != nil {

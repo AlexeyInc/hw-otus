@@ -27,9 +27,9 @@ func main() {
 	// defer stop()
 
 	serverDisconnected := make(chan bool)
-	//clientDisconnected := make(chan bool)
+	clientDisconnected := make(chan bool)
 	defer close(serverDisconnected)
-	//defer close(clientDisconnected)
+	defer close(clientDisconnected)
 
 	reader := os.Stdin
 
@@ -37,40 +37,38 @@ func main() {
 
 	if err := client.Connect(); err != nil {
 		fmt.Println(err.Error())
-		os.Exit(0)
+		os.Exit(1)
 	}
 	fmt.Printf("...Connected to %s:%s\n", host, port)
 	defer client.Close()
 
 	wg := sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(1)
 
 	go func() {
-	OUT:
+	SERVER_KILL:
 		for {
 			err := client.Receive()
 			if err != nil {
 				serverDisconnected <- true
-				break OUT
+				break SERVER_KILL
 			}
 		}
-		wg.Done()
 	}()
 
 	go func() {
-	OUT:
+	CLIENT_KILL:
 		for {
 			err := client.Send()
 			if err != nil {
 				fmt.Println("...Connection was closed by client")
-				wg.Done()
-				break OUT
+				break CLIENT_KILL
 			}
 			select {
 			//case <-ctx.Done():
 			case <-serverDisconnected:
 				fmt.Println("...Connection was closed by peer")
-				break OUT
+				break CLIENT_KILL
 			default:
 			}
 		}

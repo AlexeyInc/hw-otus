@@ -10,10 +10,6 @@ import (
 	"time"
 )
 
-// $ go-telnet --timeout=10s host port
-// $ go-telnet mysite.ru 8080
-// $ go-telnet --timeout=3s 1.1.1.1 123
-
 const timeoutFlag = "timeout"
 
 func main() {
@@ -31,9 +27,6 @@ func main() {
 
 	address := net.JoinHostPort(host, port)
 
-	// ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT)
-	// defer stop()
-
 	serverDisconnected := make(chan bool)
 	clientDisconnected := make(chan bool)
 	defer close(serverDisconnected)
@@ -47,7 +40,7 @@ func main() {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	fmt.Printf("...Connected to %s:%s\n", host, port)
+	//fmt.Printf("...Connected to %s:%s\n", host, port)
 	defer client.Close()
 
 	wg := sync.WaitGroup{}
@@ -69,13 +62,12 @@ func main() {
 		for {
 			err := client.Send()
 			if err != nil {
-				fmt.Println("...Connection was closed by client")
+				//fmt.Println("...Connection was closed by client")
 				break CLIENT_KILL
 			}
 			select {
-			//case <-ctx.Done():
 			case <-serverDisconnected:
-				fmt.Println("...Connection was closed by peer")
+				//fmt.Println("...Connection was closed by peer")
 				break CLIENT_KILL
 			default:
 			}

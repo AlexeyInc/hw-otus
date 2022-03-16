@@ -14,12 +14,20 @@ import (
 // $ go-telnet mysite.ru 8080
 // $ go-telnet --timeout=3s 1.1.1.1 123
 
-func main() {
-	host := os.Args[1]
-	port := os.Args[2]
+const timeoutFlag = "timeout"
 
+func main() {
 	var timeout time.Duration
-	flag.DurationVar(&timeout, "timeout", 2*time.Minute, "Default max time 2min")
+	flag.DurationVar(&timeout, timeoutFlag, 2*time.Minute, "Default max time 2min")
+	flag.Parse()
+
+	startIndxArgs := 1
+	if isFlagPassed(timeoutFlag) {
+		startIndxArgs++
+	}
+
+	host := os.Args[startIndxArgs]
+	port := os.Args[startIndxArgs+1]
 
 	address := net.JoinHostPort(host, port)
 
@@ -76,4 +84,14 @@ func main() {
 	}()
 
 	wg.Wait()
+}
+
+func isFlagPassed(name string) bool {
+	found := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
 }

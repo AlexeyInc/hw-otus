@@ -57,7 +57,7 @@ func (client *Client) Send() error {
 
 	if scanner.Scan() {
 		msgToServer := scanner.Text()
-		//fmt.Println(msgToServer)
+		// fmt.Println(msgToServer)
 
 		client.conn.Write([]byte(fmt.Sprintf("%s\n", msgToServer)))
 		return nil

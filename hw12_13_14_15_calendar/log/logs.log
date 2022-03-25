@@ -1,0 +1,19 @@
+2022-03-25T18:20:08.784+0200	INFO	calendar is running...
+2022-03-25T18:20:14.878+0200	INFO	request has been made...
+ClientIP: 127.0.0.1:63372
+Method: GET
+URL: /hi
+HttpProtocol: HTTP/1.1
+StatusCode: 200
+ContentLength: 12
+Latency: 33.875µs
+User_agent: Mozilla/5.0
+2022-03-25T18:20:29.748+0200	INFO	request has been made...
+ClientIP: 127.0.0.1:63372
+Method: GET
+URL: /bye
+HttpProtocol: HTTP/1.1
+StatusCode: 200
+ContentLength: 12
+Latency: 8.709µs
+User_agent: Mozilla/5.0

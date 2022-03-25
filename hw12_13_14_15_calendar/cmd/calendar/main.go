@@ -3,21 +3,24 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
+	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/app"
+	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/server/http"
+	memorystorage "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/memory"
 )
 
-var configFile string
+var configFile, logFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "../../configs/config.toml", "Path to configuration file")
+	flag.StringVar(&logFile, "log", "../../internal/logger/requests.log", "Path to log file")
 }
 
 func main() {
@@ -28,13 +31,20 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	config, err := configs.NewConfig(configFile)
+	if err != nil {
+		log.Fatalln("can't read config file: " + err.Error())
+		os.Exit(1)
+	}
 
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	zapLogg := logger.New(logFile, config.Logger.Level)
+	defer zapLogg.SugarLogger.Sync()
 
-	server := internalhttp.NewServer(logg, calendar)
+	storage := memorystorage.New(config)
+
+	calendar := app.New(zapLogg, storage)
+
+	server := internalhttp.NewServer(zapLogg, config, calendar)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
@@ -47,14 +57,14 @@ func main() {
 		defer cancel()
 
 		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+			zapLogg.Error("failed to stop http server: " + err.Error())
 		}
 	}()
 
-	logg.Info("calendar is running...")
+	zapLogg.Info("calendar is running...")
 
 	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
+		zapLogg.Error("failed to start http server: " + err.Error())
 		cancel()
 		os.Exit(1) //nolint:gocritic
 	}

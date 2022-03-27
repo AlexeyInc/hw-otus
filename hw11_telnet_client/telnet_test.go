@@ -93,7 +93,7 @@ func TestTelnetClient(t *testing.T) {
 			defer func() { require.NoError(t, client.Close()) }()
 
 			err = client.Receive()
-			require.Error(t, err)
+			require.Nil(t, err)
 		}()
 
 		go func() {

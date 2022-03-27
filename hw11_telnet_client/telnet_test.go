@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var defDuration = "5s"
+
 func TestTelnetClient(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		l, err := net.Listen("tcp", "127.0.0.1:")
@@ -26,7 +28,7 @@ func TestTelnetClient(t *testing.T) {
 			in := &bytes.Buffer{}
 			out := &bytes.Buffer{}
 
-			timeout, err := time.ParseDuration("10s")
+			timeout, err := time.ParseDuration(defDuration)
 			require.NoError(t, err)
 
 			client := NewTelnetClient(l.Addr().String(), timeout, ioutil.NopCloser(in), out)
@@ -65,7 +67,7 @@ func TestTelnetClient(t *testing.T) {
 
 	t.Run("incorrect address", func(t *testing.T) {
 		address := net.JoinHostPort("tcp", "127.abc.0.1:")
-		timeout, _ := time.ParseDuration("10s")
+		timeout, _ := time.ParseDuration(defDuration)
 		client := NewTelnetClient(address, timeout, nil, nil)
 
 		require.Error(t, client.Connect())
@@ -85,7 +87,7 @@ func TestTelnetClient(t *testing.T) {
 			in := &bytes.Buffer{}
 			out := &bytes.Buffer{}
 
-			timeout, err := time.ParseDuration("10s")
+			timeout, err := time.ParseDuration(defDuration)
 			require.NoError(t, err)
 
 			client := NewTelnetClient(l.Addr().String(), timeout, ioutil.NopCloser(in), out)

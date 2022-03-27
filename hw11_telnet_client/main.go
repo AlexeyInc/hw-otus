@@ -13,9 +13,11 @@ import (
 
 const timeoutFlag = "timeout"
 
+var defaultTimeout = 10 * time.Second
+
 func main() {
 	var timeout time.Duration
-	flag.DurationVar(&timeout, timeoutFlag, 10*time.Second, "Default max time 2min")
+	flag.DurationVar(&timeout, timeoutFlag, defaultTimeout, "Default max time 2min")
 	flag.Parse()
 
 	args := flag.Args()

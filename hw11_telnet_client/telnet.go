@@ -1,9 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"errors"
-	"fmt"
 	"io"
 	"net"
 	"time"
@@ -46,36 +43,39 @@ func (client *Client) Connect() error {
 }
 
 func (client *Client) Close() error {
-	if err := client.conn.Close(); err != nil {
-		return err
-	}
-	return nil
+	return client.conn.Close()
 }
 
 func (client *Client) Send() error {
-	scanner := bufio.NewScanner(client.in)
+	_, err := io.Copy(client.conn, client.in)
 
-	if scanner.Scan() {
-		msgToServer := scanner.Text()
-		// fmt.Println(msgToServer)
+	return err
+	// scanner := bufio.NewScanner(client.in)
 
-		client.conn.Write([]byte(fmt.Sprintf("%s\n", msgToServer)))
-		return nil
-	}
+	// if scanner.Scan() {
+	// 	msgToServer := scanner.Text()
+	// 	// fmt.Println(msgToServer)
 
-	return errors.New("error: unable to scan input")
+	// 	client.conn.Write([]byte(fmt.Sprintf("%s\n", msgToServer)))
+	// 	return nil
+	// }
+
+	//return errors.New("error: unable to scan input")
 }
 
 func (client *Client) Receive() error {
-	scanner := bufio.NewScanner(client.conn)
+	_, err := io.Copy(client.out, client.conn)
 
-	if scanner.Scan() {
-		msgFromSever := scanner.Text()
-		fmt.Println(msgFromSever)
-		client.out.Write([]byte(fmt.Sprintf("%s\n", msgFromSever)))
-		return nil
-	}
-	return errors.New("error: unable to scan msg from server")
+	return err
+	// scanner := bufio.NewScanner(client.conn)
+
+	// if scanner.Scan() {
+	// 	msgFromSever := scanner.Text()
+	// 	fmt.Println(msgFromSever)
+	// 	client.out.Write([]byte(fmt.Sprintf("%s\n", msgFromSever)))
+	// 	return nil
+	// }
+	// return errors.New("error: unable to scan msg from server")
 }
 
 // Place your code here.

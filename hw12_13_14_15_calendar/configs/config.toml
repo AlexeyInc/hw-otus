@@ -3,7 +3,7 @@ level = "INFO"
 
 [storage]
 driver = "postgres"
-source = "postgres://alex:secret@localhost:5432/calendar?sslmode=disable"
+source = "postgres://alex:secret@pgOtus:5432/calendar?sslmode=disable"
 
 [server]
 host = "localhost"

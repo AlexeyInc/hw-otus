@@ -2,11 +2,12 @@ package internalhttp
 
 import (
 	"context"
-	"io"
+	"log"
 	"net/http"
-	"os"
 
+	api "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/api"
 	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 )
 
 type Server struct {
@@ -19,32 +20,31 @@ type Logger interface {
 	Error(msg string)
 }
 
-type Application interface { // TODO
-}
+func RunHTTPServer(context context.Context, config configs.Config, app api.EventServiceServer, logger Logger) (err error) {
+	mux := runtime.NewServeMux()
 
-func myHandler(res http.ResponseWriter, req *http.Request) {
-	io.WriteString(res, "Hello world!")
-}
-
-func NewServer(logger Logger, config configs.Config, app Application) *Server {
-	http.Handle("/", loggingMiddleware(logger, http.HandlerFunc(myHandler)))
-
-	return &Server{
-		Host: config.Server.Host,
-		Port: config.Server.Port,
+	err = api.RegisterEventServiceHandlerServer(context, mux, app)
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	s := &http.Server{
+		Addr:    config.HTTPServer.Host + config.HTTPServer.Port,
+		Handler: addLoggingMiddleware(logger, mux),
+	}
+
+	go func() {
+		<-context.Done()
+
+		if err := s.Shutdown(context); err != nil {
+			log.Fatal("Failed to shutdown http server: ", err)
+		}
+	}()
+
+	logger.Info("calendar HTTP server is running...")
+	if err := s.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatal("Failed to listen and serve: ", err)
+		return err
+	}
+	return
 }
-
-func (s *Server) Start(ctx context.Context) error {
-	http.ListenAndServe(s.Host+s.Port, nil)
-
-	<-ctx.Done()
-	return nil
-}
-
-func (s *Server) Stop(ctx context.Context) error {
-	os.Exit(1)
-	return nil
-}
-
-// TODO

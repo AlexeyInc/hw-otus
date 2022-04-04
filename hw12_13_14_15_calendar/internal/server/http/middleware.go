@@ -27,12 +27,12 @@ func (w *statusWriter) Write(b []byte) (int, error) {
 	return n, err
 }
 
-func loggingMiddleware(logger Logger, next http.Handler) http.Handler {
+func addLoggingMiddleware(logger Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sw := statusWriter{ResponseWriter: w}
 		clientIP := r.RemoteAddr
 		url := r.URL.Path
-		httpProto := r.Proto
+		httpProtocol := r.Proto
 		method := r.Method
 		userAgent := strings.Split(r.UserAgent(), " ")[0]
 
@@ -40,10 +40,24 @@ func loggingMiddleware(logger Logger, next http.Handler) http.Handler {
 		next.ServeHTTP(&sw, r)
 		duration := time.Since(start)
 
+		// connections := map[string]interface{}{
+		// 	"ClientIP":      clientIP,
+		// 	"Method":        method,
+		// 	"URL":           url,
+		// 	"HttpProtocol":  httpProtocol,
+		// 	"StatusCode":    sw.status,
+		// 	"ContentLength": sw.length,
+		// 	"Latency":       duration,
+		// 	"User_agent":    userAgent,
+		// }
+		// p, _ := json.Marshal(connections)
+
+		// logger.Info(fmt.Sprintf("http request has been made...\n\t%s", p))
+
 		logger.Info(
-			fmt.Sprintf("request has been made...\nClientIP: %s\nMethod: %s\nURL: %s\nHttpProtocol: %s\nStatusCode: %d"+
-				"\nContentLength: %d\nLatency: %s\nUser_agent: %s",
-				clientIP, method, url, httpProto, sw.status, sw.length, duration, userAgent),
+			fmt.Sprintf("http request has been made...\nClientIP:%s;\nMethod:%s;\nURL:%s;\nHttpProtocol:%s;\nStatusCode:%d;"+
+				"\nContentLength:%d;\nLatency:%d;\nUser_agent:%s",
+				clientIP, method, url, httpProtocol, sw.status, sw.length, duration, userAgent),
 		)
 	})
 }

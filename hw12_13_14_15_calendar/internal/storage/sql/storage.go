@@ -9,6 +9,8 @@ import (
 	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
 	sqlc "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/sql/sqlc"
 	domainModels "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/models"
+
+	_ "github.com/lib/pq"
 )
 
 type Storage struct {
@@ -31,12 +33,12 @@ func (s *Storage) Connect(ctx context.Context) error {
 		return fmt.Errorf("cannot open pgx driver: %w", err)
 	}
 
+	s.db = db
 	connErr := s.db.PingContext(ctx)
 	if connErr != nil {
 		return connErr
 	}
 
-	s.db = db
 	s.dbQueries = sqlc.New(db)
 
 	return nil

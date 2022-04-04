@@ -3,9 +3,15 @@ level = "INFO"
 
 [storage]
 driver = "postgres"
-source = "postgres://alex:secret@pgOtus:5432/calendar?sslmode=disable"
+source = "postgres://alex:secret@localhost:5432/calendar?sslmode=disable"
 
-[server]
+[HTTPServer]
 host = "localhost"
 port = ":8080"
+network = "tcp"
+
+[gRPCServer]
+host = "localhost"
+port = ":8081"
+network = "tcp"
 

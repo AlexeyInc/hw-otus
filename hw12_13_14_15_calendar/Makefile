@@ -43,7 +43,7 @@ migrateup:
 migratedown:
 	migrate -path ./migrations -database "postgresql://alex:secret@localhost:5432/calendar?sslmode=disable" -verbose down
 
-sqlcgen:
-	sqlc generate
+grpcgen:
+	cd api; buf generate
 
-.PHONY: build run build-img run-img version test lint postgres createdb dropdb migrateup migratedown sqlcgen
+.PHONY: build run build-img run-img version test lint postgres createdb dropdb migrateup migratedown sqlcgen grpcgen

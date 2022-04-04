@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	Logger  loggerConf
-	Storage storageConf
-	Server  serverConf
+	Logger     loggerConf
+	Storage    storageConf
+	HTTPServer serverConf
+	GRPCServer serverConf
 }
 
 type loggerConf struct {
@@ -22,8 +23,9 @@ type storageConf struct {
 }
 
 type serverConf struct {
-	Host string `toml:"host"`
-	Port string `toml:"port"`
+	Host    string `toml:"host"`
+	Port    string `toml:"port"`
+	Network string `toml:"network"`
 }
 
 func NewConfig(fullPath string) (config Config, err error) {

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	api "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/api"
+	api "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/api/protoc"
 	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 )

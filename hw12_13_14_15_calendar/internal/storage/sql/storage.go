@@ -14,10 +14,11 @@ import (
 )
 
 type Storage struct {
-	driver    string
-	source    string
 	db        *sql.DB
 	dbQueries *sqlc.Queries
+
+	driver string
+	source string
 }
 
 func New(c configs.Config) *Storage {

@@ -9,10 +9,10 @@ import (
 	"syscall"
 
 	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
+	app "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/logger"
 	internalgrpc "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/server/http"
-	app "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/services"
 
 	//memorystorage "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/memory"
 	sqlstorage "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/sql"
@@ -22,7 +22,7 @@ var configFile, logFile string
 
 func init() {
 	flag.StringVar(&configFile, "config", "../../configs/config.toml", "Path to configuration file")
-	flag.StringVar(&logFile, "log", "../../internal/logger/requests.log", "Path to log file")
+	flag.StringVar(&logFile, "log", "../../log/logs.log", "Path to log file")
 }
 
 func main() {
@@ -61,9 +61,14 @@ func main() {
 
 	// Run HTTP Server...
 
-	go internalhttp.RunHTTPServer(ctx, config, calendar, zapLogg)
+	//go internalhttp.RunHTTPServer(ctx, config, calendar, zapLogg)
+
+	s := internalhttp.NewServer(ctx, config, calendar, zapLogg)
+	go s.Start(ctx)
 
 	<-ctx.Done()
+
+	s.Stop(ctx)
 
 	println("\nAll servers are stopped...")
 	cancel()

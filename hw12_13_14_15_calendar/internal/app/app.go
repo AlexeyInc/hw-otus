@@ -4,13 +4,16 @@ import (
 	"context"
 	"time"
 
-	pb "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/api/protoc"
+	api "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/api/protoc"
 	models "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/models"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type App struct {
-	pb.UnimplementedEventServiceServer
+	api.UnimplementedEventServiceServer
+
 	storage Storage
 }
 
@@ -35,7 +38,7 @@ func New(logger Logger, storage Storage) *App {
 	}
 }
 
-func (a *App) CreateEvent(ctx context.Context, req *pb.CreateEventRequest) (*pb.CreateEventResponse, error) {
+func (a *App) CreateEvent(ctx context.Context, req *api.CreateEventRequest) (*api.CreateEventResponse, error) {
 	eventDto := models.Event{
 		Title:       req.Title,
 		StartEvent:  req.StartEvent.AsTime(),
@@ -46,8 +49,8 @@ func (a *App) CreateEvent(ctx context.Context, req *pb.CreateEventRequest) (*pb.
 
 	createdEvent, err := a.storage.CreateEvent(ctx, eventDto)
 
-	response := &pb.CreateEventResponse{
-		Event: &pb.Event{
+	response := &api.CreateEventResponse{
+		Event: &api.Event{
 			Id:          createdEvent.ID,
 			Title:       createdEvent.Title,
 			StartEvent:  timestamppb.New(createdEvent.StartEvent),
@@ -60,11 +63,13 @@ func (a *App) CreateEvent(ctx context.Context, req *pb.CreateEventRequest) (*pb.
 	return response, err
 }
 
-func (a *App) GetEvent(ctx context.Context, req *pb.GetEventRequest) (*pb.GetEventResponse, error) {
+func (a *App) GetEvent(ctx context.Context, req *api.GetEventRequest) (*api.GetEventResponse, error) {
 	eventDto, err := a.storage.GetEvent(context.Background(), req.Id)
-
-	response := &pb.GetEventResponse{
-		Event: &pb.Event{
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, err.Error())
+	}
+	response := &api.GetEventResponse{
+		Event: &api.Event{
 			Id:          eventDto.ID,
 			Title:       eventDto.Title,
 			StartEvent:  timestamppb.New(eventDto.StartEvent),
@@ -77,7 +82,7 @@ func (a *App) GetEvent(ctx context.Context, req *pb.GetEventRequest) (*pb.GetEve
 	return response, err
 }
 
-func (a *App) UpdateEvent(ctx context.Context, req *pb.UpdateEventRequest) (*pb.UpdateEventResponse, error) {
+func (a *App) UpdateEvent(ctx context.Context, req *api.UpdateEventRequest) (*api.UpdateEventResponse, error) {
 	eventDto := models.Event{
 		ID:          req.Id,
 		Title:       req.Title,
@@ -89,8 +94,8 @@ func (a *App) UpdateEvent(ctx context.Context, req *pb.UpdateEventRequest) (*pb.
 
 	updatedEvent, err := a.storage.UpdateEvent(context.Background(), eventDto)
 
-	response := &pb.UpdateEventResponse{
-		Event: &pb.Event{
+	response := &api.UpdateEventResponse{
+		Event: &api.Event{
 			Id:          updatedEvent.ID,
 			Title:       updatedEvent.Title,
 			StartEvent:  timestamppb.New(updatedEvent.StartEvent),
@@ -103,39 +108,39 @@ func (a *App) UpdateEvent(ctx context.Context, req *pb.UpdateEventRequest) (*pb.
 	return response, err
 }
 
-func (a *App) DeleteEvent(ctx context.Context, req *pb.DeleteEventRequest) (response *pb.EmptyResponse, err error) {
+func (a *App) DeleteEvent(ctx context.Context, req *api.DeleteEventRequest) (response *api.EmptyResponse, err error) {
 	err = a.storage.DeleteEvent(ctx, req.Id)
-	response = &pb.EmptyResponse{
+	response = &api.EmptyResponse{
 		Success: err == nil,
 	}
 	return
 }
 
-func (a *App) GetDayEvents(ctx context.Context, day *pb.GetEventsByDayRequest) (*pb.GetEventsResponse, error) {
+func (a *App) GetDayEvents(ctx context.Context, day *api.GetEventsByDayRequest) (*api.GetEventsResponse, error) {
 	eventsDto, err := a.storage.GetDayEvents(ctx, day.Day.AsTime())
 
 	return toResposeModels(eventsDto), err
 }
 
-func (a *App) GetWeekEvents(ctx context.Context, weekStart *pb.GetEventsByWeekRequest) (*pb.GetEventsResponse, error) {
+func (a *App) GetWeekEvents(ctx context.Context, weekStart *api.GetEventsByWeekRequest) (*api.GetEventsResponse, error) {
 	eventsDto, err := a.storage.GetWeekEvents(ctx, weekStart.WeekStart.AsTime())
 
 	return toResposeModels(eventsDto), err
 }
 
-func (a *App) GetMonthEvents(ctx context.Context, monthStart *pb.GetEventsByMonthRequest) (*pb.GetEventsResponse, error) {
+func (a *App) GetMonthEvents(ctx context.Context, monthStart *api.GetEventsByMonthRequest) (*api.GetEventsResponse, error) {
 	eventsDto, err := a.storage.GetMonthEvents(ctx, monthStart.MonthStart.AsTime())
 
 	return toResposeModels(eventsDto), err
 }
 
-func toResposeModels(events []models.Event) *pb.GetEventsResponse {
-	results := &pb.GetEventsResponse{
-		Event: make([]*pb.Event, len(events)),
+func toResposeModels(events []models.Event) *api.GetEventsResponse {
+	results := &api.GetEventsResponse{
+		Event: make([]*api.Event, len(events)),
 	}
 
 	for i, ev := range events {
-		results.Event[i] = &pb.Event{
+		results.Event[i] = &api.Event{
 			Id:          ev.ID,
 			Title:       ev.Title,
 			StartEvent:  timestamppb.New(ev.StartEvent),

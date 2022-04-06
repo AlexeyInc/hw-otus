@@ -1,0 +1,7 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/AlexeyInc/hw-otus/hw10_program_optimization
+BenchmarkGetDomainStat
+BenchmarkGetDomainStat-8   	       8	 131344766 ns/op	132845853 B/op	 1700080 allocs/op
+PASS
+ok  	github.com/AlexeyInc/hw-otus/hw10_program_optimization	2.239s

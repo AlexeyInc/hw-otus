@@ -1,4 +1,5 @@
-// +build !bench
+//go:build bench
+// +build bench
 
 package hw10programoptimization
 
@@ -10,6 +11,7 @@ import (
 )
 
 func TestGetDomainStat(t *testing.T) {
+	//nolint
 	data := `{"Id":1,"Name":"Howard Mendoza","Username":"0Oliver","Email":"aliquid_qui_ea@Browsedrive.gov","Phone":"6-866-899-36-79","Password":"InAQJvsq","Address":"Blackbird Place 25"}
 {"Id":2,"Name":"Jesse Vasquez","Username":"qRichardson","Email":"mLynch@broWsecat.com","Phone":"9-373-949-64-00","Password":"SiZLeNSGn","Address":"Fulton Hill 80"}
 {"Id":3,"Name":"Clarence Olson","Username":"RachelAdams","Email":"RoseSmith@Browsecat.com","Phone":"988-48-97","Password":"71kuz3gA5w","Address":"Monterey Park 39"}
@@ -23,6 +25,19 @@ func TestGetDomainStat(t *testing.T) {
 			"browsecat.com": 2,
 			"linktype.com":  1,
 		}, result)
+	})
+
+	t.Run("empty result with no errors", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(data), "ua")
+		require.NoError(t, err)
+		require.Equal(t, DomainStat{}, result)
+	})
+
+	t.Run("check invalid input", func(t *testing.T) {
+		domains, err := GetDomainStat(bytes.NewBufferString("wrong_data"), "com")
+
+		require.Nil(t, err)
+		require.Equal(t, 0, len(domains))
 	})
 
 	t.Run("find 'gov'", func(t *testing.T) {

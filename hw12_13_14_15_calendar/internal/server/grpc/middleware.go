@@ -36,7 +36,7 @@ func addLoggingMiddleware(logger Logger) grpc.UnaryServerInterceptor {
 		}
 
 		str := fmt.Sprintf("gRPC request has been made...\nClientIP:%s;\nMethod:%s;\nStatusCode:%s;"+
-			"\nContentLength:%d;\nLatency:%d;\nUser_agent:%s",
+			"\nContentLength:%d;\nLatency:%s;\nUser_agent:%s",
 			clientId, method, statucCode, contentLength, latency, userAgent)
 
 		logger.Info(str)

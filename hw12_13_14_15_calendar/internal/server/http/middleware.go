@@ -40,23 +40,9 @@ func addLoggingMiddleware(logger Logger, next http.Handler) http.Handler {
 		next.ServeHTTP(&sw, r)
 		duration := time.Since(start)
 
-		// connections := map[string]interface{}{
-		// 	"ClientIP":      clientIP,
-		// 	"Method":        method,
-		// 	"URL":           url,
-		// 	"HttpProtocol":  httpProtocol,
-		// 	"StatusCode":    sw.status,
-		// 	"ContentLength": sw.length,
-		// 	"Latency":       duration,
-		// 	"User_agent":    userAgent,
-		// }
-		// p, _ := json.Marshal(connections)
-
-		// logger.Info(fmt.Sprintf("http request has been made...\n\t%s", p))
-
 		logger.Info(
 			fmt.Sprintf("http request has been made...\nClientIP:%s;\nMethod:%s;\nURL:%s;\nHttpProtocol:%s;\nStatusCode:%d;"+
-				"\nContentLength:%d;\nLatency:%d;\nUser_agent:%s",
+				"\nContentLength:%d;\nLatency:%s;\nUser_agent:%s",
 				clientIP, method, url, httpProtocol, sw.status, sw.length, duration, userAgent),
 		)
 	})

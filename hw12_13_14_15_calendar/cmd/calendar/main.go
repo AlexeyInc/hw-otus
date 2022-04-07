@@ -61,14 +61,9 @@ func main() {
 
 	// Run HTTP Server...
 
-	//go internalhttp.RunHTTPServer(ctx, config, calendar, zapLogg)
-
-	s := internalhttp.NewServer(ctx, config, calendar, zapLogg)
-	go s.Start(ctx)
+	go internalhttp.RunHTTPServer(ctx, config, calendar, zapLogg)
 
 	<-ctx.Done()
-
-	s.Stop(ctx)
 
 	println("\nAll servers are stopped...")
 	cancel()

@@ -66,7 +66,6 @@ func NewServer(context context.Context, config configs.Config, app api.EventServ
 }
 
 func (server *Server) Start(ctx context.Context) (err error) {
-	//logger.Info("calendar HTTP server is running...")
 	if err = server.httpServer.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatal("Failed to listen and serve: ", err)
 		return

@@ -63,7 +63,6 @@ func NewServer(context context.Context, config configs.Config, app api.EventServ
 }
 
 func (s *Server) Start(l net.Listener) (err error) {
-	//logger.Info("calendar gRPC server is running...")
 	if err = s.gRPCServer.Serve(l); err != nil {
 		log.Fatal("can't run server: ", err)
 	}

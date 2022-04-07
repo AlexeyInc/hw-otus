@@ -2,7 +2,6 @@ package memorystorage
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -103,10 +102,6 @@ func (s *MemoryStorage) GetWeekEvents(ctx context.Context, weekStart time.Time) 
 
 	events := make([]models.Event, 0)
 	for _, ev := range s.events {
-		fmt.Println(weekStart)
-		fmt.Println(ev.StartEvent)
-		fmt.Println(weekStart.AddDate(0, 0, 7))
-
 		if ev.StartEvent == weekStart ||
 			ev.StartEvent.UTC().After(weekStart.UTC()) && ev.StartEvent.UTC().Before(weekStart.UTC().AddDate(0, 0, 7)) {
 			events = append(events, ev)

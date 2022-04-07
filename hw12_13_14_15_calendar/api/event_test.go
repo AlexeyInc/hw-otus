@@ -61,6 +61,8 @@ func TestEventAPI(t *testing.T) {
 	baseEvent := createRandomEvent()
 
 	t.Run("Create event", func(t *testing.T) {
+		defer storage.Close(ctx)
+
 		json_data, err := json.Marshal(baseEvent)
 		require.Nil(t, err)
 
@@ -78,11 +80,17 @@ func TestEventAPI(t *testing.T) {
 			log.Fatal(err)
 		}
 
-		requireEqual(t, baseEvent, result)
+		requireEqualMap(t, baseEvent, result)
 	})
 
 	t.Run("Get event", func(t *testing.T) {
-		getUrl := baseAppUrl + "/1"
+		defer storage.Close(ctx)
+
+		newEvent := createRandomDbEventModels(_day, 1)[0]
+
+		eventId := addEventToStorage(ctx, storage, newEvent)
+
+		getUrl := baseAppUrl + "/" + strconv.FormatInt(eventId, 10)
 		req, err := http.NewRequestWithContext(ctx, "GET", getUrl, nil)
 		if err != nil {
 			log.Fatal("Request err: " + err.Error())
@@ -96,17 +104,17 @@ func TestEventAPI(t *testing.T) {
 			log.Fatal(err)
 		}
 
-		requireEqual(t, baseEvent, result)
+		requireEqual(t, newEvent, result)
 	})
 	t.Run("Update event", func(t *testing.T) {
-		updateEventId := "1"
-		eventId, err := strconv.ParseInt(updateEventId, 10, 64)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
+		defer storage.Close(ctx)
+
+		newEvent := createRandomDbEventModels(_day, 1)[0]
+
+		newEventId := addEventToStorage(ctx, storage, newEvent)
 
 		updateEvent := createRandomEvent()
-		updateEvent["id"] = eventId
+		updateEvent["id"] = newEventId
 
 		json_data, err := json.Marshal(updateEvent)
 		require.Nil(t, err)
@@ -119,7 +127,8 @@ func TestEventAPI(t *testing.T) {
 		_, err = client.Do(req)
 		require.Nil(t, err)
 
-		req, err = http.NewRequestWithContext(ctx, "GET", baseAppUrl+"/"+updateEventId, nil)
+		updatedEventId := strconv.FormatInt(newEventId, 10)
+		req, err = http.NewRequestWithContext(ctx, "GET", baseAppUrl+"/"+updatedEventId, nil)
 		if err != nil {
 			log.Fatal("Request err: " + err.Error())
 		}
@@ -129,11 +138,17 @@ func TestEventAPI(t *testing.T) {
 		var updatedEvent EventResponse
 		json.NewDecoder(resp.Body).Decode(&updatedEvent)
 
-		requireEqual(t, updateEvent, updatedEvent)
+		requireEqualMap(t, updateEvent, updatedEvent)
 	})
 	t.Run("Delete event", func(t *testing.T) {
-		deleteEventId := "/1"
-		req, err := http.NewRequestWithContext(ctx, "DELETE", baseAppUrl+deleteEventId, nil)
+		defer storage.Close(ctx)
+
+		newEvent := createRandomDbEventModels(_day, 1)[0]
+
+		newEventId := addEventToStorage(ctx, storage, newEvent)
+
+		deleteEventId := strconv.FormatInt(newEventId, 10)
+		req, err := http.NewRequestWithContext(ctx, "DELETE", baseAppUrl+"/"+deleteEventId, nil)
 		if err != nil {
 			log.Fatal("Request err: " + err.Error())
 		}
@@ -153,11 +168,15 @@ func TestEventAPI(t *testing.T) {
 
 		eventsCount := util.RandomInt(10)
 
-		events := createRandomDbEvents(_day, eventsCount)
+		events := createRandomDbEventModels(_day, eventsCount)
 
-		addEventsToStorage(ctx, storage, events)
+		for _, ev := range events {
+			addEventToStorage(ctx, storage, ev)
+		}
 
-		req, err := http.NewRequestWithContext(ctx, "GET", baseAppUrl+"/Day/2022-04-06T00:00:00Z", nil)
+		nowPlusDay := time.Now().Local().UTC().Format("2006-01-02T15:04:05Z")
+
+		req, err := http.NewRequestWithContext(ctx, "GET", baseAppUrl+"/Day/"+nowPlusDay, nil)
 		if err != nil {
 			log.Fatal("Request err: " + err.Error())
 		}
@@ -172,11 +191,15 @@ func TestEventAPI(t *testing.T) {
 
 		eventsCount := util.RandomInt(10)
 
-		events := createRandomDbEvents(_week, eventsCount)
+		events := createRandomDbEventModels(_week, eventsCount)
 
-		addEventsToStorage(ctx, storage, events)
+		for _, ev := range events {
+			addEventToStorage(ctx, storage, ev)
+		}
 
-		req, err := http.NewRequestWithContext(ctx, "GET", baseAppUrl+"/Week/2022-04-12T00:00:00Z", nil)
+		nowPlusWeek := time.Now().Local().UTC().AddDate(0, 0, 7).Format("2006-01-02T15:04:05Z")
+
+		req, err := http.NewRequestWithContext(ctx, "GET", baseAppUrl+"/Week/"+nowPlusWeek, nil)
 		if err != nil {
 			log.Fatal("Request err: " + err.Error())
 		}
@@ -191,11 +214,15 @@ func TestEventAPI(t *testing.T) {
 
 		eventsCount := util.RandomInt(10)
 
-		events := createRandomDbEvents(_month, eventsCount)
+		events := createRandomDbEventModels(_month, eventsCount)
 
-		addEventsToStorage(ctx, storage, events)
+		for _, ev := range events {
+			addEventToStorage(ctx, storage, ev)
+		}
 
-		req, err := http.NewRequestWithContext(ctx, "GET", baseAppUrl+"/Month/2022-05-06T00:00:00Z", nil)
+		nowPlusMonth := time.Now().Local().UTC().AddDate(0, 0, 30).Format("2006-01-02T15:04:05Z")
+
+		req, err := http.NewRequestWithContext(ctx, "GET", baseAppUrl+"/Month/"+nowPlusMonth, nil)
 		if err != nil {
 			log.Fatal("Request err: " + err.Error())
 		}
@@ -207,13 +234,24 @@ func TestEventAPI(t *testing.T) {
 	})
 }
 
-func requireEqual(t *testing.T, expected map[string]interface{}, actual EventResponse) {
+func requireEqualMap(t *testing.T, expected map[string]interface{}, actual EventResponse) {
+	t.Helper()
 	require.NotNil(t, actual.Event)
 	require.Equal(t, expected["title"], actual.Event.Title)
 	require.Equal(t, expected["startEvent"], actual.Event.StartEvent)
 	require.Equal(t, expected["endEvent"], actual.Event.EndEvent)
 	require.Equal(t, expected["description"], actual.Event.Description)
 	require.Equal(t, expected["idUser"], actual.Event.IdUser)
+}
+
+func requireEqual(t *testing.T, expected models.Event, actual EventResponse) {
+	t.Helper()
+	require.NotNil(t, actual.Event)
+	require.Equal(t, expected.Title, actual.Event.Title)
+	require.Equal(t, expected.StartEvent, actual.Event.StartEvent)
+	require.Equal(t, expected.EndEvent, actual.Event.EndEvent)
+	require.Equal(t, expected.Description, actual.Event.Description)
+	require.Equal(t, expected.IDUser, actual.Event.IdUser)
 }
 
 func createAndLaunchTestServer() (*httptest.Server, context.Context, *memorystorage.MemoryStorage) {
@@ -251,10 +289,11 @@ func createRandomEvent() map[string]interface{} {
 	return randEvent
 }
 
-func createRandomDbEvents(p Period, count int) []models.Event {
+func createRandomDbEventModels(p Period, count int) []models.Event {
 	events := make([]models.Event, count)
 	for i := 0; i < count; i++ {
 		startEvent := p.GetTimePeriod()
+
 		endEvent := startEvent.AddDate(0, 0, util.RandomInt(10)).Local().UTC()
 
 		events[i] = models.Event{
@@ -280,13 +319,12 @@ func (s Period) GetTimePeriod() time.Time {
 	return time.Now().Local().UTC()
 }
 
-func addEventsToStorage(ctx context.Context, storage *memorystorage.MemoryStorage, events []models.Event) {
-	for _, ev := range events {
-		_, err := storage.CreateEvent(ctx, ev)
-		if err != nil {
-			log.Fatal(err)
-		}
+func addEventToStorage(ctx context.Context, storage *memorystorage.MemoryStorage, ev models.Event) int64 {
+	event, err := storage.CreateEvent(ctx, ev)
+	if err != nil {
+		log.Fatal(err)
 	}
+	return event.ID
 }
 
 func executeGetEventsRequest(t *testing.T, req *http.Request, client *http.Client) api.GetEventsResponse {

@@ -75,7 +75,7 @@ func getRequirements(require string) string {
 }
 
 func getValidationErrors(fieldT reflect.StructField, fieldV reflect.Value, require string) []ValidationError {
-	validationErros := make([]ValidationError, 0)
+	var validationErros []ValidationError
 	require = strings.Trim(require, "\"")
 	requirements := strings.Split(require, separatorSymb)
 
@@ -89,8 +89,6 @@ func getValidationErrors(fieldT reflect.StructField, fieldV reflect.Value, requi
 		isValidField, err = validInt(int(fieldV.Int()), requirements)
 	case reflect.Slice:
 		isValidField, err = validSlice(fieldV, requirements)
-	default:
-		fmt.Println("Can't define type of field") // TODO: remove after tests
 	}
 	if !isValidField {
 		validationErros = append(validationErros, ValidationError{
@@ -137,7 +135,10 @@ func validString(str string, requirements []string) (bool, error) {
 
 		if indx := strings.Index(req, regexpTag); indx != -1 {
 			pattern := req[indx+len(regexpTag):]
-			match, _ := regexp.MatchString(pattern, str)
+			match, err := regexp.MatchString(pattern, str)
+			if err != nil {
+				return false, err
+			}
 			if !match {
 				isValidStr = false
 				addErrMsg(&resultErrors, "string should match pattern: "+pattern)
@@ -224,8 +225,6 @@ func validSlice(items reflect.Value, requirements []string) (bool, error) {
 			_, err = validInt(int(item.Int()), requirements)
 		case reflect.Uint8:
 			_, err = validInt(int(item.Uint()), requirements)
-		default:
-			fmt.Println("Type not defined <-") // TODO: remove after tests
 		}
 		if err != nil {
 			isValidSlice = false

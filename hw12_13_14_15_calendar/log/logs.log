@@ -1,18 +1,20 @@
-2022-04-07T13:18:17.764+0300	INFO	calendar HTTP server is running...
-2022-04-07T13:18:17.764+0300	INFO	calendar gRPC server is running...
-2022-04-07T13:18:19.877+0300	INFO	gRPC request has been made...
-ClientIP:127.0.0.1:49910;
-Method:/event.EventService/GetEvent;
-StatusCode:OK;
-ContentLength:269;
-Latency:3.542µs;
-User_agent:[grpc-node-js/1.4.2]
-2022-04-07T13:18:21.869+0300	INFO	http request has been made...
-ClientIP:127.0.0.1:49918;
+2022-04-07T15:33:58.348+0300	INFO	calendar HTTP server is running...
+2022-04-07T15:33:58.349+0300	INFO	calendar gRPC server is running...
+2022-04-07T15:34:02.945+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57587;
 Method:GET;
 URL:/v1/EventService/729;
 HttpProtocol:HTTP/1.1;
 StatusCode:200;
 ContentLength:188;
-Latency:3.592625ms;
+Latency:18.899ms;
 User_agent:PostmanRuntime/7.29.0
+2022-04-07T15:34:05.664+0300	INFO	gRPC request has been made...
+ClientIP:127.0.0.1:57590;
+Method:/event.EventService/GetEvent;
+StatusCode:OK;
+ContentLength:269;
+Latency:4.25µs;
+User_agent:[grpc-node-js/1.4.2]
+2022-04-07T15:34:08.763+0300	INFO	
+All servers are stopped...

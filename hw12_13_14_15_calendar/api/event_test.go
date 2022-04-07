@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -52,8 +51,6 @@ type EventResponse struct {
 func TestEventAPI(t *testing.T) {
 	ts, ctx, storage := createAndLaunchTestServer()
 	defer ts.Close()
-
-	fmt.Println(storage)
 
 	client := &http.Client{}
 	baseAppUrl := ts.URL + "/v1/EventService"

@@ -14,7 +14,7 @@ import (
 	internalgrpc "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/server/http"
 
-	//memorystorage "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/memory"
+	// memorystorage "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/memory".
 	sqlstorage "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
@@ -40,18 +40,16 @@ func main() {
 	}
 
 	zapLogg := logger.New(logFile, config.Logger.Level)
-	defer zapLogg.ZapLogger.Sync()
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	defer cancel()
 
 	storage := sqlstorage.New(config)
 	if err := storage.Connect(ctx); err != nil {
-		log.Fatalln("connection to database failed: " + err.Error())
+		cancel()
+		zapLogg.Info("connection to database failed: " + err.Error())
 		os.Exit(1)
 	}
-	defer storage.Close(ctx)
 
 	calendar := app.New(zapLogg, storage)
 
@@ -65,7 +63,10 @@ func main() {
 
 	<-ctx.Done()
 
-	println("\nAll servers are stopped...")
+	zapLogg.Info("\nAll servers are stopped...")
 	cancel()
+	zapLogg.ZapLogger.Sync()
+	storage.Close(ctx)
+
 	os.Exit(0)
 }

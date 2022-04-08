@@ -7,8 +7,8 @@ import (
 )
 
 type TelnetClient interface {
+	Close() error
 	Connect() error
-	io.Closer
 	Send() error
 	Receive() error
 }

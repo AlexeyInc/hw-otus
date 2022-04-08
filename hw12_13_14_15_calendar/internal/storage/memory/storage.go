@@ -34,6 +34,7 @@ func (s *MemoryStorage) CreateEvent(ctx context.Context, ev models.Event) (model
 	newEvent.EndEvent = ev.EndEvent
 	newEvent.Description = ev.Description
 	newEvent.IDUser = ev.IDUser
+	newEvent.Notification = ev.Notification
 	s.events[globalNewEventID] = newEvent
 	globalNewEventID++
 	s.mutex.Unlock()
@@ -54,6 +55,7 @@ func (s *MemoryStorage) UpdateEvent(ctx context.Context, event models.Event) (mo
 	ev.EndEvent = event.EndEvent
 	ev.Description = event.Description
 	ev.IDUser = event.IDUser
+	ev.Notification = event.Notification
 
 	s.events[event.ID] = ev
 

@@ -4,7 +4,8 @@ create table events (
     start_event      timestamp not null,
     end_event        timestamp not null,
     description     text,
-    id_user          bigint not null
+    id_user          bigint not null,
+    notification        timestamp
 );
 
 create table users (

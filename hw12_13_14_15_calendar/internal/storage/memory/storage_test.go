@@ -46,6 +46,7 @@ func TestGetEvent(t *testing.T) {
 	require.Equal(t, newEvent.EndEvent, event.EndEvent)
 	require.Equal(t, newEvent.Description, event.Description)
 	require.Equal(t, newEvent.IDUser, event.IDUser)
+	require.Equal(t, newEvent.Notification, event.Notification)
 }
 
 func TestDeleteEvent(t *testing.T) {
@@ -81,6 +82,7 @@ func TestUpdateEvent(t *testing.T) {
 	require.Equal(t, event.EndEvent, updatedEvent.EndEvent)
 	require.Equal(t, event.Description, updatedEvent.Description)
 	require.Equal(t, event.IDUser, updatedEvent.IDUser)
+	require.Equal(t, event.Notification, updatedEvent.Notification)
 }
 
 func TestGetWeekEvents(t *testing.T) {

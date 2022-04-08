@@ -1,8 +1,8 @@
 -- name: CreateEvent :one
 INSERT INTO events (
-  title, start_event, end_event, description, id_user
+  title, start_event, end_event, description, id_user, notification
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6
 )
 RETURNING *;
 
@@ -27,7 +27,7 @@ ORDER BY start_event;
 
 -- name: UpdateEvent :one
 UPDATE events 
-SET title =  $2, start_event = $3, end_event = $4, description = $5, id_user = $6
+SET title =  $2, start_event = $3, end_event = $4, description = $5, id_user = $6, notification = $7
 WHERE id = $1
 RETURNING *;
 

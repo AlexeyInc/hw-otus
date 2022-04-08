@@ -253,6 +253,10 @@
         "idUser": {
           "type": "string",
           "format": "int64"
+        },
+        "notification": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -296,6 +300,10 @@
         "idUser": {
           "type": "string",
           "format": "int64"
+        },
+        "notification": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -342,6 +350,10 @@
         "idUser": {
           "type": "string",
           "format": "int64"
+        },
+        "notification": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },

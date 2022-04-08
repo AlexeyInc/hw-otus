@@ -36,12 +36,13 @@ var (
 )
 
 type EventModel struct {
-	Id          int64     `json:"id,omitempty,string"`
-	Title       string    `json:"title,omitempty"`
-	StartEvent  time.Time `json:"startEvent,omitempty"`
-	EndEvent    time.Time `json:"endEvent,omitempty"`
-	Description string    `json:"description,omitempty"`
-	IdUser      int64     `json:"idUser,omitempty,string"`
+	Id           int64     `json:"id,omitempty,string"`
+	Title        string    `json:"title,omitempty"`
+	StartEvent   time.Time `json:"startEvent,omitempty"`
+	EndEvent     time.Time `json:"endEvent,omitempty"`
+	Description  string    `json:"description,omitempty"`
+	IdUser       int64     `json:"idUser,omitempty,string"`
+	notification time.Time `json:"notification,omitempty"`
 }
 
 type EventResponse struct {
@@ -277,11 +278,12 @@ func createAndLaunchTestServer() (*httptest.Server, context.Context, *memorystor
 
 func createRandomEvent() map[string]interface{} {
 	randEvent := map[string]interface{}{
-		"title":       util.RandomTitle(),
-		"startEvent":  time.Now().Local().UTC(),
-		"endEvent":    time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
-		"description": util.RandomDescription(),
-		"idUser":      util.RandomUserID(),
+		"title":        util.RandomTitle(),
+		"startEvent":   time.Now().Local().UTC(),
+		"endEvent":     time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
+		"description":  util.RandomDescription(),
+		"idUser":       util.RandomUserID(),
+		"notification": time.Now().Local().UTC().AddDate(0, 0, -1),
 	}
 	return randEvent
 }
@@ -294,11 +296,12 @@ func createRandomDbEventModels(p Period, count int) []models.Event {
 		endEvent := startEvent.AddDate(0, 0, util.RandomInt(10)).Local().UTC()
 
 		events[i] = models.Event{
-			Title:       util.RandomTitle(),
-			StartEvent:  startEvent,
-			EndEvent:    endEvent,
-			Description: util.RandomDescription(),
-			IDUser:      util.RandomUserID(),
+			Title:        util.RandomTitle(),
+			StartEvent:   startEvent,
+			EndEvent:     endEvent,
+			Description:  util.RandomDescription(),
+			IDUser:       util.RandomUserID(),
+			Notification: time.Now().AddDate(0, 0, -1).Local().UTC(),
 		}
 	}
 	return events

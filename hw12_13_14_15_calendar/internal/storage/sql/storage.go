@@ -51,11 +51,12 @@ func (s *Storage) Close(ctx context.Context) error {
 
 func (s *Storage) CreateEvent(ctx context.Context, event domainModels.Event) (domainModels.Event, error) {
 	createEvent := sqlc.CreateEventParams{
-		Title:       event.Title,
-		StartEvent:  event.StartEvent,
-		EndEvent:    event.EndEvent,
-		Description: sql.NullString{String: event.Description, Valid: true},
-		IDUser:      event.IDUser,
+		Title:        event.Title,
+		StartEvent:   event.StartEvent,
+		EndEvent:     event.EndEvent,
+		Description:  sql.NullString{String: event.Description, Valid: true},
+		IDUser:       event.IDUser,
+		Notification: sql.NullTime{Time: event.Notification, Valid: true},
 	}
 
 	createdModel, err := s.dbQueries.CreateEvent(ctx, createEvent)
@@ -65,12 +66,13 @@ func (s *Storage) CreateEvent(ctx context.Context, event domainModels.Event) (do
 
 func (s *Storage) UpdateEvent(ctx context.Context, event domainModels.Event) (domainModels.Event, error) {
 	updateEvent := sqlc.UpdateEventParams{
-		ID:          event.ID,
-		Title:       event.Title,
-		StartEvent:  event.StartEvent,
-		EndEvent:    event.EndEvent,
-		Description: sql.NullString{String: event.Description, Valid: true},
-		IDUser:      event.IDUser,
+		ID:           event.ID,
+		Title:        event.Title,
+		StartEvent:   event.StartEvent,
+		EndEvent:     event.EndEvent,
+		Description:  sql.NullString{String: event.Description, Valid: true},
+		IDUser:       event.IDUser,
+		Notification: sql.NullTime{Time: event.Notification, Valid: true},
 	}
 
 	updatedEvent, err := s.dbQueries.UpdateEvent(ctx, updateEvent)
@@ -116,12 +118,13 @@ func (s Storage) GetMonthEvents(ctx context.Context, monthStart time.Time) (evMo
 
 func toViewModel(ev sqlc.Event) domainModels.Event {
 	return domainModels.Event{
-		ID:          ev.ID,
-		Title:       ev.Title,
-		StartEvent:  ev.StartEvent,
-		EndEvent:    ev.EndEvent,
-		Description: ev.Description.String,
-		IDUser:      ev.IDUser,
+		ID:           ev.ID,
+		Title:        ev.Title,
+		StartEvent:   ev.StartEvent,
+		EndEvent:     ev.EndEvent,
+		Description:  ev.Description.String,
+		IDUser:       ev.IDUser,
+		Notification: ev.Notification.Time,
 	}
 }
 

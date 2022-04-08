@@ -40,23 +40,25 @@ func New(logger Logger, storage Storage) *App {
 
 func (a *App) CreateEvent(ctx context.Context, req *api.CreateEventRequest) (*api.CreateEventResponse, error) {
 	eventDto := models.Event{
-		Title:       req.Title,
-		StartEvent:  req.StartEvent.AsTime(),
-		EndEvent:    req.EndEvent.AsTime(),
-		Description: req.Description,
-		IDUser:      req.IdUser,
+		Title:        req.Title,
+		StartEvent:   req.StartEvent.AsTime(),
+		EndEvent:     req.EndEvent.AsTime(),
+		Description:  req.Description,
+		IDUser:       req.IdUser,
+		Notification: req.Notification.AsTime(),
 	}
 
 	createdEvent, err := a.storage.CreateEvent(ctx, eventDto)
 
 	response := &api.CreateEventResponse{
 		Event: &api.Event{
-			Id:          createdEvent.ID,
-			Title:       createdEvent.Title,
-			StartEvent:  timestamppb.New(createdEvent.StartEvent),
-			EndEvent:    timestamppb.New(createdEvent.EndEvent),
-			Description: createdEvent.Description,
-			IdUser:      createdEvent.IDUser,
+			Id:           createdEvent.ID,
+			Title:        createdEvent.Title,
+			StartEvent:   timestamppb.New(createdEvent.StartEvent),
+			EndEvent:     timestamppb.New(createdEvent.EndEvent),
+			Description:  createdEvent.Description,
+			IdUser:       createdEvent.IDUser,
+			Notification: timestamppb.New(createdEvent.Notification),
 		},
 	}
 
@@ -70,12 +72,13 @@ func (a *App) GetEvent(ctx context.Context, req *api.GetEventRequest) (*api.GetE
 	}
 	response := &api.GetEventResponse{
 		Event: &api.Event{
-			Id:          eventDto.ID,
-			Title:       eventDto.Title,
-			StartEvent:  timestamppb.New(eventDto.StartEvent),
-			EndEvent:    timestamppb.New(eventDto.EndEvent),
-			Description: eventDto.Description,
-			IdUser:      eventDto.IDUser,
+			Id:           eventDto.ID,
+			Title:        eventDto.Title,
+			StartEvent:   timestamppb.New(eventDto.StartEvent),
+			EndEvent:     timestamppb.New(eventDto.EndEvent),
+			Description:  eventDto.Description,
+			IdUser:       eventDto.IDUser,
+			Notification: timestamppb.New(eventDto.Notification),
 		},
 	}
 
@@ -84,24 +87,26 @@ func (a *App) GetEvent(ctx context.Context, req *api.GetEventRequest) (*api.GetE
 
 func (a *App) UpdateEvent(ctx context.Context, req *api.UpdateEventRequest) (*api.UpdateEventResponse, error) {
 	eventDto := models.Event{
-		ID:          req.Id,
-		Title:       req.Title,
-		StartEvent:  req.StartEvent.AsTime(),
-		EndEvent:    req.EndEvent.AsTime(),
-		Description: req.Description,
-		IDUser:      req.IdUser,
+		ID:           req.Id,
+		Title:        req.Title,
+		StartEvent:   req.StartEvent.AsTime(),
+		EndEvent:     req.EndEvent.AsTime(),
+		Description:  req.Description,
+		IDUser:       req.IdUser,
+		Notification: req.Notification.AsTime(),
 	}
 
 	updatedEvent, err := a.storage.UpdateEvent(context.Background(), eventDto)
 
 	response := &api.UpdateEventResponse{
 		Event: &api.Event{
-			Id:          updatedEvent.ID,
-			Title:       updatedEvent.Title,
-			StartEvent:  timestamppb.New(updatedEvent.StartEvent),
-			EndEvent:    timestamppb.New(updatedEvent.EndEvent),
-			Description: updatedEvent.Description,
-			IdUser:      updatedEvent.IDUser,
+			Id:           updatedEvent.ID,
+			Title:        updatedEvent.Title,
+			StartEvent:   timestamppb.New(updatedEvent.StartEvent),
+			EndEvent:     timestamppb.New(updatedEvent.EndEvent),
+			Description:  updatedEvent.Description,
+			IdUser:       updatedEvent.IDUser,
+			Notification: timestamppb.New(updatedEvent.Notification),
 		},
 	}
 
@@ -138,15 +143,15 @@ func toResposeModels(events []models.Event) *api.GetEventsResponse {
 	results := &api.GetEventsResponse{
 		Event: make([]*api.Event, len(events)),
 	}
-
 	for i, ev := range events {
 		results.Event[i] = &api.Event{
-			Id:          ev.ID,
-			Title:       ev.Title,
-			StartEvent:  timestamppb.New(ev.StartEvent),
-			EndEvent:    timestamppb.New(ev.EndEvent),
-			Description: ev.Description,
-			IdUser:      ev.IDUser,
+			Id:           ev.ID,
+			Title:        ev.Title,
+			StartEvent:   timestamppb.New(ev.StartEvent),
+			EndEvent:     timestamppb.New(ev.EndEvent),
+			Description:  ev.Description,
+			IdUser:       ev.IDUser,
+			Notification: timestamppb.New(ev.Notification),
 		}
 	}
 	return results

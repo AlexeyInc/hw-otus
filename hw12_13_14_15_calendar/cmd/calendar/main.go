@@ -39,6 +39,7 @@ func main() {
 	}
 
 	zapLogg := logger.New(logFile, config.Logger.Level)
+	defer zapLogg.ZapLogger.Sync()
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
@@ -49,6 +50,7 @@ func main() {
 		cancel()
 		return
 	}
+	defer storage.Close(ctx)
 
 	calendar := app.New(zapLogg, storage)
 
@@ -62,14 +64,7 @@ func main() {
 
 	<-ctx.Done()
 
-	zapLogg.Info("\nAll servers are stopped...")
-	cancel()
-	zapLogg.ZapLogger.Sync()
-	storage.Close(ctx)
+	<-ctx.Done()
 
-	if err := server.Start(ctx); err != nil {
-		zapLogg.Error("failed to start http server: " + err.Error())
-		cancel()
-		return
-	}
+	zapLogg.Info("\nAll servers are stopped...")
 }

@@ -1,1 +1,17 @@
 version: "3"
+
+services:
+  postgres:
+    container_name: pgOtus
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: alex
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: calendar
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data/
+volumes: 
+  dbdata:
+

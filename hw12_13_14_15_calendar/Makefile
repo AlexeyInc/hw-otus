@@ -8,7 +8,7 @@ build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
 
 run: build
-	$(BIN) -config ./configs/config.toml
+	$(BIN) -config ./configs/config.toml -log ./log/logs.log
 
 build-img:
 	docker build \
@@ -23,7 +23,7 @@ version: build
 	$(BIN) version
 
 test:
-	go test -race ./internal/... ./pkg/...
+	go test -race ./internal/storage/memory ./internal/storage/sql/sqlc
 
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.41.1
@@ -31,4 +31,19 @@ install-lint-deps:
 lint: install-lint-deps
 	golangci-lint run ./...
 
-.PHONY: build run build-img run-img version test lint
+createdb:
+	docker exec -it pgOtus createdb --username=alex --owner=alex calendar
+
+dropdb:
+	docker exec -it pgOtus dropdb calendar
+
+migrateup:
+	migrate -path ./migrations -database "postgresql://alex:secret@localhost:5432/calendar?sslmode=disable" -verbose up
+
+migratedown:
+	migrate -path ./migrations -database "postgresql://alex:secret@localhost:5432/calendar?sslmode=disable" -verbose down
+
+sqlcgen:
+	sqlc generate
+
+.PHONY: build run build-img run-img version test lint postgres createdb dropdb migrateup migratedown sqlcgen

@@ -1,5 +1,11 @@
 [logger]
 level = "INFO"
 
-# TODO
-# ...
+[storage]
+driver = "postgres"
+source = "postgres://alex:secret@pgOtus:5432/calendar?sslmode=disable"
+
+[server]
+host = "localhost"
+port = ":8080"
+

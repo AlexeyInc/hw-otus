@@ -1,0 +1,11 @@
+2022-03-25T16:03:06.377+0200	INFO	Port:8080
+2022-03-25T16:03:06.377+0200	INFO	calendar is running...
+2022-03-25T16:03:11.425+0200	INFO	request has been made...
+ClientIP: 127.0.0.1:55497
+Method: GET
+URL: /1
+HttpProtocol: HTTP/1.1
+StatusCode: 200
+ContentLength: 12
+Latency: 15.083µs
+User_agent: Mozilla/5.0

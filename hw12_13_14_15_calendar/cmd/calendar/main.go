@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"log"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -33,8 +32,8 @@ func main() {
 
 	config, err := configs.NewConfig(configFile)
 	if err != nil {
-		log.Fatalln("can't read config file: " + err.Error())
-		os.Exit(1)
+		log.Println("can't read config file: " + err.Error())
+		return
 	}
 
 	zapLogg := logger.New(logFile, config.Logger.Level)
@@ -66,6 +65,6 @@ func main() {
 	if err := server.Start(ctx); err != nil {
 		zapLogg.Error("failed to start http server: " + err.Error())
 		cancel()
-		os.Exit(1) //nolint:gocritic
+		return
 	}
 }

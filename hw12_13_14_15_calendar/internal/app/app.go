@@ -45,7 +45,7 @@ func (a *App) CreateEvent(ctx context.Context,
 }
 
 func (a *App) GetEvent(ctx context.Context, eventID int64) (models.Event, error) {
-	return a.storage.GetEvent(context.Background(), eventID)
+	return a.storage.GetEvent(ctx, eventID)
 }
 
 func (a *App) UpdateEvent(ctx context.Context,
@@ -57,7 +57,7 @@ func (a *App) UpdateEvent(ctx context.Context,
 		EndEvent:   end,
 		IDUser:     idUser,
 	}
-	return a.storage.UpdateEvent(context.Background(), updateEvent)
+	return a.storage.UpdateEvent(ctx, updateEvent)
 }
 
 func (a *App) DeleteEvent(ctx context.Context, eventID int64) error {

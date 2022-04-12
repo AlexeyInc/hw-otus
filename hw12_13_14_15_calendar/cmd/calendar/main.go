@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"log"
-	"os"
 	"os/signal"
 	"syscall"
 
@@ -35,8 +34,8 @@ func main() {
 
 	config, err := configs.NewConfig(configFile)
 	if err != nil {
-		log.Fatalln("can't read config file: " + err.Error())
-		os.Exit(1)
+		log.Println("can't read config file: " + err.Error())
+		return
 	}
 
 	zapLogg := logger.New(logFile, config.Logger.Level)
@@ -46,9 +45,9 @@ func main() {
 
 	storage := sqlstorage.New(config)
 	if err := storage.Connect(ctx); err != nil {
-		cancel()
 		zapLogg.Info("connection to database failed: " + err.Error())
-		os.Exit(1)
+		cancel()
+		return
 	}
 
 	calendar := app.New(zapLogg, storage)
@@ -68,5 +67,9 @@ func main() {
 	zapLogg.ZapLogger.Sync()
 	storage.Close(ctx)
 
-	os.Exit(0)
+	if err := server.Start(ctx); err != nil {
+		zapLogg.Error("failed to start http server: " + err.Error())
+		cancel()
+		return
+	}
 }

@@ -10,13 +10,14 @@ import (
 )
 
 type Event struct {
-	ID           int64          `json:"id"`
-	Title        string         `json:"title"`
-	StartEvent   time.Time      `json:"start_event"`
-	EndEvent     time.Time      `json:"end_event"`
-	Description  sql.NullString `json:"description"`
-	IDUser       int64          `json:"id_user"`
-	Notification sql.NullTime   `json:"notification"`
+	ID                 int64          `json:"id"`
+	Title              string         `json:"title"`
+	StartEvent         time.Time      `json:"start_event"`
+	EndEvent           time.Time      `json:"end_event"`
+	Description        sql.NullString `json:"description"`
+	IDUser             int64          `json:"id_user"`
+	Notification       sql.NullTime   `json:"notification"`
+	Notificationsended sql.NullBool   `json:"notificationsended"`
 }
 
 type User struct {

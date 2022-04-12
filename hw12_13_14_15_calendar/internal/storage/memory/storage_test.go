@@ -15,8 +15,8 @@ func createRandomEvent(t *testing.T) models.Event {
 	t.Helper()
 	event := models.Event{
 		Title:       util.RandomTitle(),
-		StartEvent:  time.Now().Local().UTC(),
-		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
+		StartEvent:  time.Now().UTC(),
+		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).UTC(),
 		Description: util.RandomDescription(),
 		IDUser:      util.RandomUserID(),
 	}
@@ -68,8 +68,8 @@ func TestUpdateEvent(t *testing.T) {
 	event := models.Event{
 		ID:          1,
 		Title:       util.RandomTitle() + "_test",
-		StartEvent:  time.Now().Local().UTC(),
-		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
+		StartEvent:  time.Now().UTC(),
+		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).UTC(),
 		Description: util.RandomDescription(),
 		IDUser:      util.RandomUserID(),
 	}
@@ -101,8 +101,8 @@ func TestGetWeekEvents(t *testing.T) {
 		date = events[i].StartEvent
 
 		require.WithinDuration(t,
-			lastEvent.StartEvent.Local().UTC(),
-			date.Local().UTC(),
+			lastEvent.StartEvent.UTC(),
+			date.UTC(),
 			week)
 	}
 }
@@ -123,8 +123,8 @@ func TestGetMonthEvents(t *testing.T) {
 		date = events[i].StartEvent
 
 		require.WithinDuration(t,
-			lastEvent.StartEvent.Local().UTC(),
-			date.Local().UTC(),
+			lastEvent.StartEvent.UTC(),
+			date.UTC(),
 			month)
 	}
 }
@@ -133,8 +133,8 @@ func TestDataRaceOnCRUD(t *testing.T) {
 	for i := 0; i < 30; i++ {
 		event := models.Event{
 			Title:       util.RandomTitle(),
-			StartEvent:  time.Now().Local().UTC(),
-			EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
+			StartEvent:  time.Now().UTC(),
+			EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).UTC(),
 			Description: util.RandomDescription(),
 			IDUser:      util.RandomUserID(),
 		}

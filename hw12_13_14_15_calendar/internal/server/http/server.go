@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	api "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/api/protoc"
-	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
+	calendarconfig "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 )
 
@@ -19,10 +19,10 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func RunHTTPServer(context context.Context, config configs.Config, app api.EventServiceServer, logger Logger) (err error) {
+func RunHTTPServer(context context.Context, config calendarconfig.Config, app api.EventServiceServer, logger Logger) {
 	mux := runtime.NewServeMux()
 
-	err = api.RegisterEventServiceHandlerServer(context, mux, app)
+	err := api.RegisterEventServiceHandlerServer(context, mux, app)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,22 +33,20 @@ func RunHTTPServer(context context.Context, config configs.Config, app api.Event
 	}
 
 	go func() {
-		<-context.Done()
-
-		if err := s.Shutdown(context); err != nil {
-			log.Fatal("Failed to shutdown http server: ", err)
+		logger.Info("calendar HTTP server is running...")
+		if err := s.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatal("Failed to listen and serve: ", err)
 		}
 	}()
 
-	logger.Info("calendar HTTP server is running...")
-	if err := s.ListenAndServe(); err != http.ErrServerClosed {
-		log.Fatal("Failed to listen and serve: ", err)
-		return err
+	<-context.Done()
+
+	if err := s.Close(); err != nil {
+		log.Fatal("failed to close http server: ", err)
 	}
-	return
 }
 
-func NewServer(context context.Context, config configs.Config, app api.EventServiceServer, logger Logger) *Server {
+func NewServer(context context.Context, config calendarconfig.Config, app api.EventServiceServer, logger Logger) *Server {
 	mux := runtime.NewServeMux()
 
 	err := api.RegisterEventServiceHandlerServer(context, mux, app)

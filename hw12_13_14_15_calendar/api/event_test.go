@@ -12,7 +12,7 @@ import (
 	"time"
 
 	api "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/api/protoc"
-	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
+	configs "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
 	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/logger"
 	memorystorage "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/memory"
@@ -31,7 +31,7 @@ const (
 )
 
 var (
-	configFilePath = "../configs/config.toml"
+	configFilePath = "../configs/calendar_config.toml"
 	logFilePath    = "../log/logs.log"
 )
 
@@ -172,7 +172,7 @@ func TestEventAPI(t *testing.T) {
 			addEventToStorage(ctx, storage, ev)
 		}
 
-		nowPlusDay := time.Now().Local().UTC().Format("2006-01-02T15:04:05Z")
+		nowPlusDay := time.Now().UTC().Format("2006-01-02T15:04:05Z")
 
 		req, err := http.NewRequestWithContext(ctx, "GET", baseAppUrl+"/Day/"+nowPlusDay, nil)
 		if err != nil {
@@ -195,7 +195,7 @@ func TestEventAPI(t *testing.T) {
 			addEventToStorage(ctx, storage, ev)
 		}
 
-		nowPlusWeek := time.Now().Local().UTC().AddDate(0, 0, 7).Format("2006-01-02T15:04:05Z")
+		nowPlusWeek := time.Now().UTC().AddDate(0, 0, 7).Format("2006-01-02T15:04:05Z")
 
 		req, err := http.NewRequestWithContext(ctx, "GET", baseAppUrl+"/Week/"+nowPlusWeek, nil)
 		if err != nil {
@@ -218,7 +218,7 @@ func TestEventAPI(t *testing.T) {
 			addEventToStorage(ctx, storage, ev)
 		}
 
-		nowPlusMonth := time.Now().Local().UTC().AddDate(0, 0, 30).Format("2006-01-02T15:04:05Z")
+		nowPlusMonth := time.Now().UTC().AddDate(0, 0, 30).Format("2006-01-02T15:04:05Z")
 
 		req, err := http.NewRequestWithContext(ctx, "GET", baseAppUrl+"/Month/"+nowPlusMonth, nil)
 		if err != nil {
@@ -279,11 +279,11 @@ func createAndLaunchTestServer() (*httptest.Server, context.Context, *memorystor
 func createRandomEvent() map[string]interface{} {
 	randEvent := map[string]interface{}{
 		"title":        util.RandomTitle(),
-		"startEvent":   time.Now().Local().UTC(),
-		"endEvent":     time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
+		"startEvent":   time.Now().UTC(),
+		"endEvent":     time.Now().AddDate(0, 0, util.RandomInt(100)).UTC(),
 		"description":  util.RandomDescription(),
 		"idUser":       util.RandomUserID(),
-		"notification": time.Now().Local().UTC().AddDate(0, 0, -1),
+		"notification": time.Now().UTC().AddDate(0, 0, -1),
 	}
 	return randEvent
 }
@@ -293,7 +293,7 @@ func createRandomDbEventModels(p Period, count int) []models.Event {
 	for i := 0; i < count; i++ {
 		startEvent := p.GetTimePeriod()
 
-		endEvent := startEvent.AddDate(0, 0, util.RandomInt(10)).Local().UTC()
+		endEvent := startEvent.AddDate(0, 0, util.RandomInt(10)).UTC()
 
 		events[i] = models.Event{
 			Title:        util.RandomTitle(),
@@ -301,7 +301,7 @@ func createRandomDbEventModels(p Period, count int) []models.Event {
 			EndEvent:     endEvent,
 			Description:  util.RandomDescription(),
 			IDUser:       util.RandomUserID(),
-			Notification: time.Now().AddDate(0, 0, -1).Local().UTC(),
+			Notification: time.Now().AddDate(0, 0, -1).UTC(),
 		}
 	}
 	return events
@@ -310,13 +310,13 @@ func createRandomDbEventModels(p Period, count int) []models.Event {
 func (s Period) GetTimePeriod() time.Time {
 	switch s {
 	case "Day":
-		return time.Now().Local().UTC()
+		return time.Now().UTC()
 	case "Week":
-		return time.Now().AddDate(0, 0, 7).Local().UTC()
+		return time.Now().AddDate(0, 0, 7).UTC()
 	case "Month":
-		return time.Now().AddDate(0, 0, 30).Local().UTC()
+		return time.Now().AddDate(0, 0, 30).UTC()
 	}
-	return time.Now().Local().UTC()
+	return time.Now().UTC()
 }
 
 func addEventToStorage(ctx context.Context, storage *memorystorage.MemoryStorage, ev models.Event) int64 {

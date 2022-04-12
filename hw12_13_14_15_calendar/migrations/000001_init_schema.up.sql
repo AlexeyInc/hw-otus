@@ -1,11 +1,12 @@
 create table events (
-    id              bigserial primary key,
-    title           text not null,
-    start_event      timestamp not null,
-    end_event        timestamp not null,
-    description     text,
-    id_user          bigint not null,
-    notification        timestamp
+    id                 bigserial primary key,
+    title              text not null,
+    start_event        timestamp not null,
+    end_event          timestamp not null,
+    description        text,
+    id_user            bigint not null,
+    notification       timestamp,
+    notificationSended boolean default false
 );
 
 create table users (

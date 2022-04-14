@@ -36,3 +36,20 @@ DELETE FROM events WHERE id = $1;
 
 -- name: DeleteTestEvents :exec
 DELETE FROM events WHERE title like '%_test';
+
+-- name: GetNotifyEvents :many
+SELECT * FROM events
+WHERE notification <= cast($1 as timestamp) 
+  AND start_event > cast($1 as timestamp)
+  AND notificationSended is false
+ORDER BY id;
+
+-- name: DeleteExpiredEvents :exec
+DELETE FROM events 
+WHERE now() > end_event + INTERVAL '1 year';
+
+-- name: UpdateEventNotificationStatus :one
+UPDATE events 
+SET notificationSended = $1
+WHERE id = $2
+RETURNING *;

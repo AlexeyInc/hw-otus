@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
+	calendarconfig "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
 	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage"
 	models "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/models"
 )
@@ -18,7 +18,7 @@ type MemoryStorage struct {
 	events map[int64]models.Event
 }
 
-func New(c configs.Config) *MemoryStorage {
+func New(c calendarconfig.Config) *MemoryStorage {
 	return &MemoryStorage{
 		events: make(map[int64]models.Event),
 		mutex:  new(sync.RWMutex),

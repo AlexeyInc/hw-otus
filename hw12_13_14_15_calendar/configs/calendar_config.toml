@@ -1,0 +1,17 @@
+[logger]
+level = "INFO"
+
+[storage]
+driver = "postgres"
+source = "postgres://alex:secret@localhost:5432/calendar?sslmode=disable"
+
+[HTTPServer]
+host = "localhost"
+port = ":8080"
+network = "tcp"
+
+[gRPCServer]
+host = "localhost"
+port = ":8081"
+network = "tcp"
+

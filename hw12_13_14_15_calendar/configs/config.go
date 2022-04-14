@@ -1,4 +1,4 @@
-package configs
+package calendarconfig
 
 import (
 	"strings"
@@ -7,25 +7,36 @@ import (
 )
 
 type Config struct {
-	Logger     loggerConf
-	Storage    storageConf
-	HTTPServer serverConf
-	GRPCServer serverConf
+	Logger     LoggerConf
+	Storage    StorageConf
+	HTTPServer ServerConf
+	GRPCServer ServerConf
+	AMQP       AMQPConf
+	Scheduler  SchedulerConf
 }
 
-type loggerConf struct {
-	Level string `toml:"level"`
+type LoggerConf struct {
+	Level string
 }
 
-type storageConf struct {
-	Driver string `toml:"driver"`
-	Source string `toml:"source"`
+type StorageConf struct {
+	Driver string
+	Source string
 }
 
-type serverConf struct {
-	Host    string `toml:"host"`
-	Port    string `toml:"port"`
-	Network string `toml:"network"`
+type ServerConf struct {
+	Host    string
+	Port    string
+	Network string
+}
+
+type AMQPConf struct {
+	Source string
+}
+
+type SchedulerConf struct {
+	CheckNotificationFreqMinutes  int
+	CheckExpiredEventsFreqMinutes int
 }
 
 func NewConfig(fullPath string) (config Config, err error) {

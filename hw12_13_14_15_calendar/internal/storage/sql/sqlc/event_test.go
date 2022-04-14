@@ -14,8 +14,8 @@ package sqlcstorage
 // 	t.Helper()
 // 	expectedEvent := CreateEventParams{
 // 		Title:       util.RandomTitle() + "_test",
-// 		StartEvent:  time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
-// 		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
+// 		StartEvent:  time.Now().AddDate(0, 0, util.RandomInt(100)).UTC(),
+// 		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).UTC(),
 // 		Description: sql.NullString{String: util.RandomDescription(), Valid: true},
 // 		IDUser:      util.RandomUserID(),
 // 	}
@@ -25,8 +25,8 @@ package sqlcstorage
 // 	require.NotEmpty(t, actualEvent)
 
 // 	require.Equal(t, expectedEvent.Title, actualEvent.Title)
-// 	require.Equal(t, expectedEvent.StartEvent.Local().UTC(), actualEvent.StartEvent.Local().UTC())
-// 	require.Equal(t, expectedEvent.EndEvent.Local().UTC(), actualEvent.EndEvent.Local().UTC())
+// 	require.Equal(t, expectedEvent.StartEvent.UTC(), actualEvent.StartEvent.UTC())
+// 	require.Equal(t, expectedEvent.EndEvent.UTC(), actualEvent.EndEvent.UTC())
 // 	require.Equal(t, expectedEvent.Description, actualEvent.Description)
 // 	require.Equal(t, expectedEvent.IDUser, actualEvent.IDUser)
 
@@ -46,8 +46,8 @@ package sqlcstorage
 // 	updateArg := UpdateEventParams{
 // 		ID:          oldEvent.ID,
 // 		Title:       util.RandomTitle() + "_test",
-// 		StartEvent:  time.Now().Local().UTC(),
-// 		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
+// 		StartEvent:  time.Now().UTC(),
+// 		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).UTC(),
 // 		Description: sql.NullString{String: util.RandomDescription(), Valid: true},
 // 		IDUser:      util.RandomUserID(),
 // 	}
@@ -58,8 +58,8 @@ package sqlcstorage
 
 // 	require.Equal(t, oldEvent.ID, updatedEvent.ID)
 // 	require.Equal(t, updateArg.Title, updatedEvent.Title)
-// 	require.Equal(t, updateArg.StartEvent.Local().UTC(), updatedEvent.StartEvent.Local().UTC())
-// 	require.Equal(t, updateArg.EndEvent.Local().UTC(), updatedEvent.EndEvent.Local().UTC())
+// 	require.Equal(t, updateArg.StartEvent.UTC(), updatedEvent.StartEvent.UTC())
+// 	require.Equal(t, updateArg.EndEvent.UTC(), updatedEvent.EndEvent.UTC())
 // 	require.Equal(t, updateArg.Description, updateArg.Description)
 // 	require.Equal(t, updateArg.IDUser, updateArg.IDUser)
 // }
@@ -90,8 +90,8 @@ package sqlcstorage
 // 		date = events[i].StartEvent
 
 // 		require.WithinDuration(t,
-// 			lastEvent.StartEvent.Local().UTC(),
-// 			date.Local().UTC(),
+// 			lastEvent.StartEvent.UTC(),
+// 			date.UTC(),
 // 			day)
 // 	}
 // }
@@ -112,8 +112,8 @@ package sqlcstorage
 // 		date = events[i].StartEvent
 
 // 		require.WithinDuration(t,
-// 			lastEvent.StartEvent.Local().UTC(),
-// 			date.Local().UTC(),
+// 			lastEvent.StartEvent.UTC(),
+// 			date.UTC(),
 // 			week)
 // 	}
 // }
@@ -134,8 +134,8 @@ package sqlcstorage
 // 		date = events[i].StartEvent
 
 // 		require.WithinDuration(t,
-// 			lastEvent.StartEvent.Local().UTC(),
-// 			date.Local().UTC(),
+// 			lastEvent.StartEvent.UTC(),
+// 			date.UTC(),
 // 			month)
 // 	}
 // }

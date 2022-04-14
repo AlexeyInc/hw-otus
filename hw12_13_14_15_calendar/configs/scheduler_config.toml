@@ -1,0 +1,10 @@
+[amqp]
+source = "amqp://guest:guest@localhost:5672/"
+
+[storage]
+driver = "postgres"
+source = "postgres://alex:secret@localhost:5432/calendar?sslmode=disable"
+
+[scheduler]
+checkNotificationFreqMinutes = 5
+checkExpiredEventsFreqMinutes = 60

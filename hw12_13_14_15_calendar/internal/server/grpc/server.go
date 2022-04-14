@@ -6,7 +6,7 @@ import (
 	"net"
 
 	api "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/api/protoc"
-	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
+	calendarconfig "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
 	"google.golang.org/grpc"
 )
 
@@ -20,7 +20,7 @@ type Server struct {
 	listener   net.Listener
 }
 
-func RunGRPCServer(context context.Context, config configs.Config, app api.EventServiceServer, logger Logger) {
+func RunGRPCServer(context context.Context, config calendarconfig.Config, app api.EventServiceServer, logger Logger) {
 	gRPCServer := grpc.NewServer(
 		grpc.UnaryInterceptor(addLoggingMiddleware(logger)),
 	)
@@ -33,18 +33,18 @@ func RunGRPCServer(context context.Context, config configs.Config, app api.Event
 	}
 
 	go func() {
-		<-context.Done()
-
-		gRPCServer.GracefulStop()
+		logger.Info("calendar gRPC server is running...")
+		if err = gRPCServer.Serve(l); err != nil {
+			log.Fatal("can't run server: ", err)
+		}
 	}()
 
-	logger.Info("calendar gRPC server is running...")
-	if err = gRPCServer.Serve(l); err != nil {
-		log.Fatal("can't run server: ", err)
-	}
+	<-context.Done()
+
+	gRPCServer.GracefulStop()
 }
 
-func NewServer(context context.Context, config configs.Config, app api.EventServiceServer, logger Logger) *Server {
+func NewServer(context context.Context, config calendarconfig.Config, app api.EventServiceServer, logger Logger) *Server {
 	gRPCServer := grpc.NewServer(
 		grpc.UnaryInterceptor(addLoggingMiddleware(logger)),
 	)

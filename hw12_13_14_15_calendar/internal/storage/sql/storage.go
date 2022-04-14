@@ -130,8 +130,8 @@ func toViewModel(ev sqlc.Event) domainModels.Event {
 
 func toViewModels(events []sqlc.Event) []domainModels.Event {
 	result := make([]domainModels.Event, len(events))
-	for i := 0; i < len(events); i++ {
-		result[i] = toViewModel(events[i])
+	for i, event := range events { //nolint
+		result[i] = toViewModel(event)
 	}
 	return result
 }

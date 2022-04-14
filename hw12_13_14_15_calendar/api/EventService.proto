@@ -2,6 +2,115 @@ syntax = "proto3";
 
 package event;
 
+option go_package = "github.com/calendar";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
 message Event {
-    // TODO
+    int64 id = 1;
+    string title = 2;
+    google.protobuf.Timestamp start_event = 3;
+    google.protobuf.Timestamp end_event = 4;
+    string description = 5;
+    int64 id_user = 6;
+    google.protobuf.Timestamp notification = 7;
+}
+
+service EventService {
+    rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse) {
+        option (google.api.http) = {
+            post: "/v1/EventService"
+            body: "*"
+        };
+    }
+    rpc GetEvent (GetEventRequest) returns (GetEventResponse) {
+        option (google.api.http) = {
+            get: "/v1/EventService/{id}"
+        };
+    }
+    rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse) {
+        option (google.api.http) = {
+			put: "/v1/EventService"
+			body: "*"
+		};
+    }
+    rpc DeleteEvent(DeleteEventRequest) returns (EmptyResponse) {
+        option (google.api.http) = {
+			delete: "/v1/EventService/{id}"
+		};
+    }
+
+    rpc GetDayEvents(GetEventsByDayRequest) returns (GetEventsResponse) {
+        option (google.api.http) = {
+            get: "/v1/EventService/Day/{day}"
+        };
+    }
+
+    rpc GetWeekEvents(GetEventsByWeekRequest) returns (GetEventsResponse) {
+        option (google.api.http) = {
+            get: "/v1/EventService/Week/{weekStart}"
+        };
+    }
+
+    rpc GetMonthEvents(GetEventsByMonthRequest) returns (GetEventsResponse) {
+        option (google.api.http) = {
+            get: "/v1/EventService/Month/{monthStart}"
+        };
+    }
+}
+
+message CreateEventRequest {
+    string title = 1;
+    google.protobuf.Timestamp start_event = 2;
+    google.protobuf.Timestamp end_event = 3;
+    string description = 4;
+    int64 id_user = 5;
+    google.protobuf.Timestamp notification = 6;
+}
+
+message CreateEventResponse { Event event = 1; }
+
+message GetEventRequest {
+    int64 id = 1;
+}
+
+message GetEventResponse {
+    Event event = 1;
+}
+
+message UpdateEventRequest {
+    int64 id = 1;
+    string title = 2;
+    google.protobuf.Timestamp start_event = 3;
+    google.protobuf.Timestamp end_event = 4;
+    string description = 5;
+    int64 id_user = 6;
+    google.protobuf.Timestamp notification = 7;
+}
+
+message UpdateEventResponse { Event event = 1; }
+
+message DeleteEventRequest {
+    int64 id = 1;
+}
+
+message EmptyResponse {
+    bool success = 1;
+}
+
+message GetEventsByDayRequest {
+    google.protobuf.Timestamp day = 1;
+}
+
+message GetEventsByWeekRequest {
+    google.protobuf.Timestamp weekStart = 1;
+}
+
+message GetEventsByMonthRequest {
+    google.protobuf.Timestamp monthStart = 1;
+}
+
+message GetEventsResponse {
+    repeated Event event = 1;
 }

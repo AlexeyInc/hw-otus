@@ -1,14 +1,18 @@
-BIN := "./bin/calendar"
+BIN_CALENDAR := "./bin/calendar"
+BIN_SCHEDULER := "./bin/calendar_scheduler"
+BIN_SENDER := "./bin/calendar_sender"
 DOCKER_IMG="calendar:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
 
 build:
-	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
+	go build -v -o $(BIN_CALENDAR) -ldflags "$(LDFLAGS)" ./cmd/calendar; \
+	go build -v -o $(BIN_SCHEDULER) -ldflags "$(LDFLAGS)" ./internal/amqp/publisher; \
+	go build -v -o $(BIN_SENDER) -ldflags "$(LDFLAGS)" ./internal/amqp/consumer
 
 run: build
-	$(BIN) -config ./configs/config.toml -log ./log/logs.log
+	$(BIN_CALENDAR) -config ./configs/calendar_config.toml -log ./log/logs.log
 
 build-img:
 	docker build \
@@ -43,7 +47,10 @@ migrateup:
 migratedown:
 	migrate -path ./migrations -database "postgresql://alex:secret@localhost:5432/calendar?sslmode=disable" -verbose down
 
-sqlcgen:
-	sqlc generate
+sqlc-gen:
+	cd internal/storage/sql/sqlc/config; sqlc generate
 
-.PHONY: build run build-img run-img version test lint postgres createdb dropdb migrateup migratedown sqlcgen
+api-gen:
+	cd api; buf generate
+
+.PHONY: build run build-img run-img version test lint postgres createdb dropdb migrateup migratedown sqlc-gen api-gen

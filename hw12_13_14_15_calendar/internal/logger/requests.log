@@ -1,11 +1,101 @@
-2022-03-25T16:03:06.377+0200	INFO	Port:8080
-2022-03-25T16:03:06.377+0200	INFO	calendar is running...
-2022-03-25T16:03:11.425+0200	INFO	request has been made...
-ClientIP: 127.0.0.1:55497
-Method: GET
-URL: /1
-HttpProtocol: HTTP/1.1
-StatusCode: 200
-ContentLength: 12
-Latency: 15.083µs
-User_agent: Mozilla/5.0
+2022-04-04T19:50:49.551+0300	INFO	calendar HTTP server is running...
+2022-04-04T19:50:49.552+0300	INFO	calendar gRPC server is running...
+2022-04-04T19:51:23.499+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57723;
+Method:GET;
+URL://v1/EventService/Day/1649060508;
+HttpProtocol:HTTP/1.1;
+StatusCode:404;
+ContentLength:47;
+Latency:816167;
+User_agent:PostmanRuntime/7.29.0
+2022-04-04T19:52:04.141+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57723;
+Method:GET;
+URL:/v1/EventService/Day/1649060508;
+HttpProtocol:HTTP/1.1;
+StatusCode:400;
+ContentLength:150;
+Latency:196000;
+User_agent:PostmanRuntime/7.29.0
+2022-04-04T19:53:10.544+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57723;
+Method:GET;
+URL:/v1/EventService/Day/"2022-04-04T09:18:18Z";
+HttpProtocol:HTTP/1.1;
+StatusCode:200;
+ContentLength:361;
+Latency:8306243542;
+User_agent:PostmanRuntime/7.29.0
+2022-04-04T19:54:02.521+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57723;
+Method:GET;
+URL:/v1/EventService/Day/"2022-04-04 09:18:18";
+HttpProtocol:HTTP/1.1;
+StatusCode:400;
+ContentLength:159;
+Latency:147375;
+User_agent:PostmanRuntime/7.29.0
+2022-04-04T19:54:11.884+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57723;
+Method:GET;
+URL:/v1/EventService/Day/"2022-04-04T09:18:18Z";
+HttpProtocol:HTTP/1.1;
+StatusCode:200;
+ContentLength:361;
+Latency:3487626708;
+User_agent:PostmanRuntime/7.29.0
+2022-04-04T19:57:36.564+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57723;
+Method:POST;
+URL:/v1/EventService;
+HttpProtocol:HTTP/1.1;
+StatusCode:500;
+ContentLength:134;
+Latency:13816333;
+User_agent:PostmanRuntime/7.29.0
+2022-04-04T20:00:29.070+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57723;
+Method:PUT;
+URL:/v1/EventService;
+HttpProtocol:HTTP/1.1;
+StatusCode:400;
+ContentLength:90;
+Latency:495958;
+User_agent:PostmanRuntime/7.29.0
+2022-04-04T20:01:00.932+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57723;
+Method:PUT;
+URL:/v1/EventService;
+HttpProtocol:HTTP/1.1;
+StatusCode:400;
+ContentLength:90;
+Latency:230334;
+User_agent:PostmanRuntime/7.29.0
+2022-04-04T20:02:10.380+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57723;
+Method:PUT;
+URL:/v1/EventService;
+HttpProtocol:HTTP/1.1;
+StatusCode:400;
+ContentLength:90;
+Latency:209209;
+User_agent:PostmanRuntime/7.29.0
+2022-04-04T20:02:50.789+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57723;
+Method:PUT;
+URL:/v1/EventService;
+HttpProtocol:HTTP/1.1;
+StatusCode:200;
+ContentLength:193;
+Latency:4657859542;
+User_agent:PostmanRuntime/7.29.0
+2022-04-04T20:04:14.851+0300	INFO	http request has been made...
+ClientIP:127.0.0.1:57723;
+Method:PUT;
+URL:/v1/EventService;
+HttpProtocol:HTTP/1.1;
+StatusCode:200;
+ContentLength:193;
+Latency:2724600750;
+User_agent:PostmanRuntime/7.29.0

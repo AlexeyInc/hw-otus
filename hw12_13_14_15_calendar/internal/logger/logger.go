@@ -10,7 +10,7 @@ import (
 var pathToLogFile string
 
 type Logger struct {
-	SugarLogger *zap.SugaredLogger
+	ZapLogger *zap.Logger
 }
 
 func New(logFile, level string) *Logger {
@@ -22,16 +22,16 @@ func New(logFile, level string) *Logger {
 	logger := zap.New(core)
 
 	return &Logger{
-		SugarLogger: logger.Sugar(),
+		ZapLogger: logger,
 	}
 }
 
 func (l Logger) Info(msg string) {
-	l.SugarLogger.Infof(msg)
+	l.ZapLogger.Info(msg)
 }
 
 func (l Logger) Error(msg string) {
-	l.SugarLogger.Errorf(msg)
+	l.ZapLogger.Error(msg)
 }
 
 func getEncoder() zapcore.Encoder {

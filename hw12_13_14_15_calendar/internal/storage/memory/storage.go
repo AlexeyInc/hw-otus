@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
+	calendarconfig "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
 	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage"
 	models "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/models"
 )
@@ -13,11 +13,12 @@ import (
 var globalNewEventID int64 = 1
 
 type MemoryStorage struct {
+	mutex *sync.RWMutex
+
 	events map[int64]models.Event
-	mutex  *sync.RWMutex
 }
 
-func New(c configs.Config) *MemoryStorage {
+func New(c calendarconfig.Config) *MemoryStorage {
 	return &MemoryStorage{
 		events: make(map[int64]models.Event),
 		mutex:  new(sync.RWMutex),
@@ -33,6 +34,7 @@ func (s *MemoryStorage) CreateEvent(ctx context.Context, ev models.Event) (model
 	newEvent.EndEvent = ev.EndEvent
 	newEvent.Description = ev.Description
 	newEvent.IDUser = ev.IDUser
+	newEvent.Notification = ev.Notification
 	s.events[globalNewEventID] = newEvent
 	globalNewEventID++
 	s.mutex.Unlock()
@@ -53,6 +55,7 @@ func (s *MemoryStorage) UpdateEvent(ctx context.Context, event models.Event) (mo
 	ev.EndEvent = event.EndEvent
 	ev.Description = event.Description
 	ev.IDUser = event.IDUser
+	ev.Notification = event.Notification
 
 	s.events[event.ID] = ev
 
@@ -68,7 +71,6 @@ func (s *MemoryStorage) DeleteEvent(ctx context.Context, eventID int64) error {
 		delete(s.events, eventID)
 		return nil
 	}
-
 	return storage.ErrEventNotFound
 }
 
@@ -80,17 +82,16 @@ func (s *MemoryStorage) GetEvent(ctx context.Context, eventID int64) (models.Eve
 	if ex && ev.ID == eventID {
 		return ev, nil
 	}
-
 	return ev, storage.ErrEventNotFound
 }
 
-func (s *MemoryStorage) GetDayEvents(ctx context.Context, day time.Time) ([]models.Event, error) {
+func (s *MemoryStorage) GetDayEvents(ctx context.Context, dayStart time.Time) ([]models.Event, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	var events []models.Event
 	for _, ev := range s.events {
-		if ev.StartEvent == day || day.UTC().After(ev.StartEvent.UTC()) && day.UTC().Before(ev.StartEvent.UTC()) {
+		if ev.StartEvent == dayStart || ev.StartEvent.UTC().After(dayStart.UTC()) && ev.StartEvent.UTC().Before(dayStart.UTC().AddDate(0, 0, 1)) {
 			events = append(events, ev)
 		}
 	}
@@ -104,11 +105,10 @@ func (s *MemoryStorage) GetWeekEvents(ctx context.Context, weekStart time.Time) 
 	events := make([]models.Event, 0)
 	for _, ev := range s.events {
 		if ev.StartEvent == weekStart ||
-			weekStart.UTC().After(ev.StartEvent.UTC()) && weekStart.UTC().Before(ev.StartEvent.AddDate(0, 0, 7)) {
+			ev.StartEvent.UTC().After(weekStart.UTC()) && ev.StartEvent.UTC().Before(weekStart.UTC().AddDate(0, 0, 7)) {
 			events = append(events, ev)
 		}
 	}
-
 	return events, nil
 }
 
@@ -119,11 +119,10 @@ func (s *MemoryStorage) GetMonthEvents(ctx context.Context, monthStart time.Time
 	events := make([]models.Event, 0)
 	for _, ev := range s.events {
 		if ev.StartEvent == monthStart ||
-			monthStart.UTC().After(ev.StartEvent.UTC()) && monthStart.UTC().Before(ev.StartEvent.AddDate(0, 1, 0)) {
+			ev.StartEvent.UTC().After(monthStart.UTC()) && ev.StartEvent.Before(monthStart.UTC().AddDate(0, 1, 0)) {
 			events = append(events, ev)
 		}
 	}
-
 	return events, nil
 }
 
@@ -132,5 +131,6 @@ func (s *MemoryStorage) Connect(ctx context.Context) error {
 }
 
 func (s *MemoryStorage) Close(ctx context.Context) error {
+	s.events = make(map[int64]models.Event)
 	return nil
 }

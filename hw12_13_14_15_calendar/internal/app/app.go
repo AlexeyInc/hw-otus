@@ -4,10 +4,16 @@ import (
 	"context"
 	"time"
 
+	api "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/api/protoc"
 	models "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/models"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type App struct { // TODO
+type App struct {
+	api.UnimplementedEventServiceServer
+
 	storage Storage
 }
 
@@ -32,46 +38,120 @@ func New(logger Logger, storage Storage) *App {
 	}
 }
 
-func (a *App) CreateEvent(ctx context.Context,
-	title string, start time.Time, end time.Time, idUser int64) (models.Event, error) {
-	newEvent := models.Event{
-		Title:      title,
-		StartEvent: start,
-		EndEvent:   end,
-		IDUser:     idUser,
+func (a *App) CreateEvent(ctx context.Context, req *api.CreateEventRequest) (*api.CreateEventResponse, error) {
+	eventDto := models.Event{
+		Title:        req.Title,
+		StartEvent:   req.StartEvent.AsTime(),
+		EndEvent:     req.EndEvent.AsTime(),
+		Description:  req.Description,
+		IDUser:       req.IdUser,
+		Notification: req.Notification.AsTime(),
 	}
 
-	return a.storage.CreateEvent(ctx, newEvent)
-}
+	createdEvent, err := a.storage.CreateEvent(ctx, eventDto)
 
-func (a *App) GetEvent(ctx context.Context, eventID int64) (models.Event, error) {
-	return a.storage.GetEvent(ctx, eventID)
-}
-
-func (a *App) UpdateEvent(ctx context.Context,
-	eventID int64, title string, start time.Time, end time.Time, idUser int64) (models.Event, error) {
-	updateEvent := models.Event{
-		ID:         eventID,
-		Title:      title,
-		StartEvent: start,
-		EndEvent:   end,
-		IDUser:     idUser,
+	response := &api.CreateEventResponse{
+		Event: &api.Event{
+			Id:           createdEvent.ID,
+			Title:        createdEvent.Title,
+			StartEvent:   timestamppb.New(createdEvent.StartEvent),
+			EndEvent:     timestamppb.New(createdEvent.EndEvent),
+			Description:  createdEvent.Description,
+			IdUser:       createdEvent.IDUser,
+			Notification: timestamppb.New(createdEvent.Notification),
+		},
 	}
-	return a.storage.UpdateEvent(ctx, updateEvent)
+
+	return response, err
 }
 
-func (a *App) DeleteEvent(ctx context.Context, eventID int64) error {
-	return a.storage.DeleteEvent(ctx, eventID)
+func (a *App) GetEvent(ctx context.Context, req *api.GetEventRequest) (*api.GetEventResponse, error) {
+	eventDto, err := a.storage.GetEvent(context.Background(), req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, err.Error())
+	}
+	response := &api.GetEventResponse{
+		Event: &api.Event{
+			Id:           eventDto.ID,
+			Title:        eventDto.Title,
+			StartEvent:   timestamppb.New(eventDto.StartEvent),
+			EndEvent:     timestamppb.New(eventDto.EndEvent),
+			Description:  eventDto.Description,
+			IdUser:       eventDto.IDUser,
+			Notification: timestamppb.New(eventDto.Notification),
+		},
+	}
+
+	return response, err
 }
 
-func (a *App) DayEvents(ctx context.Context, day time.Time) ([]models.Event, error) {
-	return a.storage.GetDayEvents(ctx, day)
+func (a *App) UpdateEvent(ctx context.Context, req *api.UpdateEventRequest) (*api.UpdateEventResponse, error) {
+	eventDto := models.Event{
+		ID:           req.Id,
+		Title:        req.Title,
+		StartEvent:   req.StartEvent.AsTime(),
+		EndEvent:     req.EndEvent.AsTime(),
+		Description:  req.Description,
+		IDUser:       req.IdUser,
+		Notification: req.Notification.AsTime(),
+	}
+
+	updatedEvent, err := a.storage.UpdateEvent(context.Background(), eventDto)
+
+	response := &api.UpdateEventResponse{
+		Event: &api.Event{
+			Id:           updatedEvent.ID,
+			Title:        updatedEvent.Title,
+			StartEvent:   timestamppb.New(updatedEvent.StartEvent),
+			EndEvent:     timestamppb.New(updatedEvent.EndEvent),
+			Description:  updatedEvent.Description,
+			IdUser:       updatedEvent.IDUser,
+			Notification: timestamppb.New(updatedEvent.Notification),
+		},
+	}
+	return response, err
 }
 
-func (a *App) DayWeek(ctx context.Context, weekStart time.Time) ([]models.Event, error) {
-	return a.storage.GetWeekEvents(ctx, weekStart)
+func (a *App) DeleteEvent(ctx context.Context, req *api.DeleteEventRequest) (response *api.EmptyResponse, err error) {
+	err = a.storage.DeleteEvent(ctx, req.Id)
+	response = &api.EmptyResponse{
+		Success: err == nil,
+	}
+	return
 }
 
-func (a *App) DayMonth(ctx context.Context, monthStart time.Time) ([]models.Event, error) {
-	return a.storage.GetMonthEvents(ctx, monthStart)
+func (a *App) GetDayEvents(ctx context.Context, day *api.GetEventsByDayRequest) (*api.GetEventsResponse, error) {
+	eventsDto, err := a.storage.GetDayEvents(ctx, day.Day.AsTime())
+
+	return toResposeModels(eventsDto), err
+}
+
+func (a *App) GetWeekEvents(ctx context.Context, weekStart *api.GetEventsByWeekRequest) (*api.GetEventsResponse, error) {
+	eventsDto, err := a.storage.GetWeekEvents(ctx, weekStart.WeekStart.AsTime())
+
+	return toResposeModels(eventsDto), err
+}
+
+func (a *App) GetMonthEvents(ctx context.Context, monthStart *api.GetEventsByMonthRequest) (*api.GetEventsResponse, error) {
+	eventsDto, err := a.storage.GetMonthEvents(ctx, monthStart.MonthStart.AsTime())
+
+	return toResposeModels(eventsDto), err
+}
+
+func toResposeModels(events []models.Event) *api.GetEventsResponse {
+	results := &api.GetEventsResponse{
+		Event: make([]*api.Event, len(events)),
+	}
+	for i, ev := range events {
+		results.Event[i] = &api.Event{
+			Id:           ev.ID,
+			Title:        ev.Title,
+			StartEvent:   timestamppb.New(ev.StartEvent),
+			EndEvent:     timestamppb.New(ev.EndEvent),
+			Description:  ev.Description,
+			IdUser:       ev.IDUser,
+			Notification: timestamppb.New(ev.Notification),
+		}
+	}
+	return results
 }

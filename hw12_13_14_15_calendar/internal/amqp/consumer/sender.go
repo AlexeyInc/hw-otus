@@ -84,7 +84,7 @@ func ProcessReceivedMessages() {
 		v := amqpModels.Notification{}
 		json.Unmarshal(r.Body, &v)
 
-		fmt.Printf("IdEvent: %d,\nTitle: %s\nEventStart: %s\nIdUser: %d",
+		fmt.Printf("\nIdEvent: %d,\nTitle: %s\nEventStart: %s\nIdUser: %d",
 			v.IdEvent, v.EventTitle, v.EventStart.String(), v.IdUser)
 		count++
 	}

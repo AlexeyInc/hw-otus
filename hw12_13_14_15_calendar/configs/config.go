@@ -45,6 +45,9 @@ func NewConfig(fullPath string) (config Config, err error) {
 	viper.SetConfigName(fileName)
 	viper.SetConfigType(fileType)
 
+	replacer := strings.NewReplacer(".", "_")
+	viper.SetEnvKeyReplacer(replacer)
+
 	viper.AutomaticEnv()
 
 	err = viper.ReadInConfig()

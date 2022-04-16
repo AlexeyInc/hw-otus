@@ -1,17 +1,16 @@
-[logger]
+[LOGGER]
 level = "INFO"
 
-[storage]
+[STORAGE]
 driver = "postgres"
 source = "postgres://alex:secret@localhost:5432/calendar?sslmode=disable"
 
-[HTTPServer]
+[HTTPSERVER]
 host = "localhost"
 port = ":8080"
 network = "tcp"
 
-[gRPCServer]
+[GRPCSERVER]
 host = "localhost"
 port = ":8081"
 network = "tcp"
-

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -50,6 +51,8 @@ func main() {
 		zapLogg.Info("connection to database failed: " + err.Error())
 		os.Exit(1)
 	}
+	fmt.Println("Successfully connected to database...")
+	defer storage.Close(ctx)
 
 	calendar := app.New(zapLogg, storage)
 

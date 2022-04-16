@@ -2,6 +2,8 @@ BIN_CALENDAR := "./bin/calendar"
 BIN_SCHEDULER := "./bin/calendar_scheduler"
 BIN_SENDER := "./bin/calendar_sender"
 DOCKER_IMG="calendar:develop"
+SHED_IMG="sched:dev"
+SEND_IMG="send:dev"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
@@ -20,8 +22,24 @@ build-img:
 		-t $(DOCKER_IMG) \
 		-f build/Dockerfile .
 
+build-sched-img:
+	docker build \
+		-t ${SHED_IMG} \
+		-f internal/amqp/publisher/docker/Dockerfile .
+
+build-send-img:
+	docker build \
+		-t ${SEND_IMG} \
+		-f internal/amqp/consumer/docker/Dockerfile .
+
 run-img: build-img
 	docker run $(DOCKER_IMG)
+
+run-sched-img: build-sched-img
+	docker run ${SHED_IMG}
+
+run-send-img: build-send-img
+	docker run ${SEND_IMG}
 
 version: build
 	$(BIN) version
@@ -53,4 +71,4 @@ sqlc-gen:
 api-gen:
 	cd api; buf generate
 
-.PHONY: build run build-img run-img version test lint postgres createdb dropdb migrateup migratedown sqlc-gen api-gen
+.PHONY: build run build-img run-img version test lint postgres createdb dropdb migrateup migratedown sqlc-gen api-gen build-sched-img build-send-img run-sched-img run-send-img

@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"os"
 	"os/signal"
 	"syscall"
 
@@ -36,20 +35,21 @@ func main() {
 
 	config, err := calendarconfig.NewConfig(configFile)
 	if err != nil {
-		log.Fatalln("can't read config file: " + err.Error())
-		os.Exit(1)
+		log.Println("can't read config file: " + err.Error())
+		return
 	}
 
 	zapLogg := logger.New(logFile, config.Logger.Level)
+	defer zapLogg.ZapLogger.Sync()
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
 	storage := sqlstorage.New(config)
 	if err := storage.Connect(ctx); err != nil {
-		cancel()
 		zapLogg.Info("connection to database failed: " + err.Error())
-		os.Exit(1)
+		cancel()
+		return
 	}
 	fmt.Println("Successfully connected to database...")
 	defer storage.Close(ctx)
@@ -67,9 +67,4 @@ func main() {
 	<-ctx.Done()
 
 	zapLogg.Info("\nAll servers are stopped...")
-
-	zapLogg.ZapLogger.Sync()
-	storage.Close(ctx)
-
-	os.Exit(0)
 }

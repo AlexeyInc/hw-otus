@@ -89,7 +89,7 @@ func (s *MemoryStorage) GetDayEvents(ctx context.Context, dayStart time.Time) ([
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	events := make([]models.Event, 0)
+	var events []models.Event
 	for _, ev := range s.events {
 		if ev.StartEvent == dayStart || ev.StartEvent.UTC().After(dayStart.UTC()) && ev.StartEvent.UTC().Before(dayStart.UTC().AddDate(0, 0, 1)) {
 			events = append(events, ev)

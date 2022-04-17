@@ -109,7 +109,6 @@ func (a *App) UpdateEvent(ctx context.Context, req *api.UpdateEventRequest) (*ap
 			Notification: timestamppb.New(updatedEvent.Notification),
 		},
 	}
-
 	return response, err
 }
 

@@ -1,9 +1,9 @@
 package util
 
 import (
-	"crypto/rand"
-	"math/big"
+	mathRand "math/rand"
 	"strings"
+	"time"
 )
 
 const (
@@ -13,8 +13,13 @@ const (
 )
 
 func RandomInt(max int) int {
-	randNum, _ := rand.Int(rand.Reader, big.NewInt(int64(max)))
-	return int(randNum.Int64())
+	mathRand.Seed(time.Now().UnixNano())
+	return mathRand.Intn(max)
+}
+
+func RandomIntRange(min, max int) int {
+	mathRand.Seed(time.Now().UnixNano())
+	return (mathRand.Intn(max-min+1) + min)
 }
 
 func RandomString(n int) string {
@@ -37,7 +42,7 @@ func RandomDescription() string {
 	return RandomString(descLen)
 }
 
-func RandomUserID() int64 { // TODO: Remove after add User logic
+func RandomUserID() int64 { // Remove after add User logic
 	users := []int64{1, 2}
 	n := len(users)
 	return users[RandomInt(n)]

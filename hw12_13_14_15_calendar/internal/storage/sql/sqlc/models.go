@@ -17,7 +17,7 @@ type Event struct {
 	Description        sql.NullString `json:"description"`
 	IDUser             int64          `json:"id_user"`
 	Notification       sql.NullTime   `json:"notification"`
-	Notificationsended sql.NullBool   `json:"notificationsended"`
+	Notificationstatus sql.NullInt32  `json:"notificationstatus"`
 }
 
 type User struct {

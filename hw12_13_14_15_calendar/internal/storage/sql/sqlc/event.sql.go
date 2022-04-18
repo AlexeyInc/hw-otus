@@ -17,7 +17,7 @@ INSERT INTO events (
 ) VALUES (
   $1, $2, $3, $4, $5, $6
 )
-RETURNING id, title, start_event, end_event, description, id_user, notification, notificationsended
+RETURNING id, title, start_event, end_event, description, id_user, notification, notificationstatus
 `
 
 type CreateEventParams struct {
@@ -47,7 +47,7 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event
 		&i.Description,
 		&i.IDUser,
 		&i.Notification,
-		&i.Notificationsended,
+		&i.Notificationstatus,
 	)
 	return i, err
 }
@@ -81,7 +81,7 @@ func (q *Queries) DeleteTestEvents(ctx context.Context) error {
 }
 
 const getDayEvents = `-- name: GetDayEvents :many
-SELECT id, title, start_event, end_event, description, id_user, notification, notificationsended FROM events
+SELECT id, title, start_event, end_event, description, id_user, notification, notificationstatus FROM events
 WHERE start_event ::date = cast($1 as date)
 ORDER BY start_event
 `
@@ -103,7 +103,7 @@ func (q *Queries) GetDayEvents(ctx context.Context, dollar_1 time.Time) ([]Event
 			&i.Description,
 			&i.IDUser,
 			&i.Notification,
-			&i.Notificationsended,
+			&i.Notificationstatus,
 		); err != nil {
 			return nil, err
 		}
@@ -119,7 +119,7 @@ func (q *Queries) GetDayEvents(ctx context.Context, dollar_1 time.Time) ([]Event
 }
 
 const getEvent = `-- name: GetEvent :one
-SELECT id, title, start_event, end_event, description, id_user, notification, notificationsended FROM events
+SELECT id, title, start_event, end_event, description, id_user, notification, notificationstatus FROM events
 WHERE id = $1
 `
 
@@ -134,13 +134,13 @@ func (q *Queries) GetEvent(ctx context.Context, id int64) (Event, error) {
 		&i.Description,
 		&i.IDUser,
 		&i.Notification,
-		&i.Notificationsended,
+		&i.Notificationstatus,
 	)
 	return i, err
 }
 
 const getMonthEvents = `-- name: GetMonthEvents :many
-SELECT id, title, start_event, end_event, description, id_user, notification, notificationsended FROM events
+SELECT id, title, start_event, end_event, description, id_user, notification, notificationstatus FROM events
 WHERE start_event::date >= cast($1 as date) AND start_event::date < cast($1 as date)::date + interval '1 month'
 ORDER BY start_event
 `
@@ -162,7 +162,7 @@ func (q *Queries) GetMonthEvents(ctx context.Context, dollar_1 time.Time) ([]Eve
 			&i.Description,
 			&i.IDUser,
 			&i.Notification,
-			&i.Notificationsended,
+			&i.Notificationstatus,
 		); err != nil {
 			return nil, err
 		}
@@ -178,10 +178,10 @@ func (q *Queries) GetMonthEvents(ctx context.Context, dollar_1 time.Time) ([]Eve
 }
 
 const getNotifyEvents = `-- name: GetNotifyEvents :many
-SELECT id, title, start_event, end_event, description, id_user, notification, notificationsended FROM events
+SELECT id, title, start_event, end_event, description, id_user, notification, notificationstatus FROM events
 WHERE notification <= cast($1 as timestamp) 
   AND start_event > cast($1 as timestamp)
-  AND notificationSended is false
+  AND notificationStatus = 0
 ORDER BY id
 `
 
@@ -202,7 +202,7 @@ func (q *Queries) GetNotifyEvents(ctx context.Context, dollar_1 time.Time) ([]Ev
 			&i.Description,
 			&i.IDUser,
 			&i.Notification,
-			&i.Notificationsended,
+			&i.Notificationstatus,
 		); err != nil {
 			return nil, err
 		}
@@ -218,7 +218,7 @@ func (q *Queries) GetNotifyEvents(ctx context.Context, dollar_1 time.Time) ([]Ev
 }
 
 const getWeekEvents = `-- name: GetWeekEvents :many
-SELECT id, title, start_event, end_event, description, id_user, notification, notificationsended FROM events
+SELECT id, title, start_event, end_event, description, id_user, notification, notificationstatus FROM events
 WHERE start_event::date >= cast($1 as date) AND start_event::date < cast($1 as date)::date + interval '7 day'
 ORDER BY start_event
 `
@@ -240,7 +240,7 @@ func (q *Queries) GetWeekEvents(ctx context.Context, dollar_1 time.Time) ([]Even
 			&i.Description,
 			&i.IDUser,
 			&i.Notification,
-			&i.Notificationsended,
+			&i.Notificationstatus,
 		); err != nil {
 			return nil, err
 		}
@@ -259,7 +259,7 @@ const updateEvent = `-- name: UpdateEvent :one
 UPDATE events 
 SET title =  $2, start_event = $3, end_event = $4, description = $5, id_user = $6, notification = $7
 WHERE id = $1
-RETURNING id, title, start_event, end_event, description, id_user, notification, notificationsended
+RETURNING id, title, start_event, end_event, description, id_user, notification, notificationstatus
 `
 
 type UpdateEventParams struct {
@@ -291,25 +291,25 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event
 		&i.Description,
 		&i.IDUser,
 		&i.Notification,
-		&i.Notificationsended,
+		&i.Notificationstatus,
 	)
 	return i, err
 }
 
 const updateEventNotificationStatus = `-- name: UpdateEventNotificationStatus :one
 UPDATE events 
-SET notificationSended = $1
+SET notificationStatus = $1
 WHERE id = $2
-RETURNING id, title, start_event, end_event, description, id_user, notification, notificationsended
+RETURNING id, title, start_event, end_event, description, id_user, notification, notificationstatus
 `
 
 type UpdateEventNotificationStatusParams struct {
-	Notificationsended sql.NullBool `json:"notificationsended"`
-	ID                 int64        `json:"id"`
+	Notificationstatus sql.NullInt32 `json:"notificationstatus"`
+	ID                 int64         `json:"id"`
 }
 
 func (q *Queries) UpdateEventNotificationStatus(ctx context.Context, arg UpdateEventNotificationStatusParams) (Event, error) {
-	row := q.db.QueryRowContext(ctx, updateEventNotificationStatus, arg.Notificationsended, arg.ID)
+	row := q.db.QueryRowContext(ctx, updateEventNotificationStatus, arg.Notificationstatus, arg.ID)
 	var i Event
 	err := row.Scan(
 		&i.ID,
@@ -319,7 +319,7 @@ func (q *Queries) UpdateEventNotificationStatus(ctx context.Context, arg UpdateE
 		&i.Description,
 		&i.IDUser,
 		&i.Notification,
-		&i.Notificationsended,
+		&i.Notificationstatus,
 	)
 	return i, err
 }

@@ -1,5 +1,7 @@
 version: "3.9"
+
 services:
+
   postgres:
     container_name: calendardb
     image: postgres:latest
@@ -36,6 +38,9 @@ services:
     restart: unless-stopped
 
   calendar:
+    build:
+      context: ../.
+      dockerfile: ./Dockerfile
     image: calendar:develop
     container_name: calendar-app
     environment:
@@ -54,7 +59,10 @@ services:
     restart: on-failure
 
   scheduler:
-    image: sched:dev
+    build:
+      context: ../.
+      dockerfile: ./internal/amqp/publisher/Dockerfile
+    image: scheduler:develop
     container_name: scheduler-app
     environment:
       AMQP_SOURCE: "amqp://guest:guest@rabbitmq:5672/"
@@ -68,10 +76,14 @@ services:
     restart: on-failure
 
   sender:
-    image: send:dev
+    build:
+      context: ../.
+      dockerfile: ./internal/amqp/consumer/Dockerfile
+    image: sender:develop
     container_name: sender-app
     environment:
       AMQP_SOURCE: "amqp://guest:guest@rabbitmq:5672/"
+      STORAGE_SOURCE: "postgres://alex:secret@calendardb:5432/calendar?sslmode=disable"
     depends_on:
       postgres:
         condition: service_healthy
@@ -81,36 +93,6 @@ services:
         condition: service_started
     command: ./app/sender -config=/configs/sender_config.toml
     restart: on-failure
+    
 volumes:
   pgdata:
-  
-
-
-# migrate:
-  #   container_name: migrations
-  #   image: migrate/migrate
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   volumes:
-  #     - ../migrations:/migrations
-  #   command: ["-path", "/migrations", "-database", "postgresql://alex:secret@calendardb:5432/calendar?sslmode=disable", "up"]
-
-# For postgres
-  # PGDATA: "/var/lib/postgresql/data/pgdata"
-    # healthcheck:
-    #   test: ["CMD-SHELL", "pg_isready -U alex -d calendar"]
-    #   interval: 3s
-    #   timeout: 5s
-
-
-  # pgadmin:
-  #   container_name: pgadmin_container
-  #   image: dpage/pgadmin4:6.4
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: "default@mail.com"
-  #     PGADMIN_DEFAULT_PASSWORD: "123"
-  #     PGADMIN_CONFIG_SERVER_MODE: "False"
-  #   ports:
-  #     - "5050:80"
-  #   restart: unless-stopped

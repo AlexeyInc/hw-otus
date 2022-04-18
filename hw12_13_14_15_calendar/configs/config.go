@@ -35,8 +35,8 @@ type AMQPConf struct {
 }
 
 type SchedulerConf struct {
-	CheckNotificationFreqMinutes  int
-	CheckExpiredEventsFreqMinutes int
+	CheckNotificationFreqSeconds  int
+	CheckExpiredEventsFreqSeconds int
 }
 
 func NewConfig(fullPath string) (config Config, err error) {

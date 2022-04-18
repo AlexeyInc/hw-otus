@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -12,8 +13,12 @@ import (
 	senderConfig "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
 	amqpClient "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/amqp"
 	amqpModels "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/amqp/models"
+	sqlstorage "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/sql"
+	sqlc "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/sql/sqlc"
 	"github.com/streadway/amqp"
 )
+
+var _notificationSendedStatus int32 = 2
 
 type AMQPClient interface {
 	InitConnectionAndChannel() error
@@ -22,6 +27,7 @@ type AMQPClient interface {
 }
 
 type Sender struct {
+	storage    *sqlstorage.Storage
 	amqpClient AMQPClient
 }
 
@@ -41,6 +47,10 @@ func New(c senderConfig.Config) *Sender {
 	return &Sender{
 		amqpClient: &amqpClient.AMQPManager{
 			AmqpURI: c.AMQP.Source,
+		},
+		storage: &sqlstorage.Storage{
+			Driver: c.Storage.Driver,
+			Source: c.Storage.Source,
 		},
 	}
 }
@@ -66,17 +76,21 @@ func main() {
 
 	sender.setupAMQP()
 
-	ctx, _ := signal.NotifyContext(context.Background(),
+	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
-	go ProcessReceivedMessages()
+	if err := sender.storage.Connect(ctx); err != nil {
+		failOnError(err, "can't connect to database")
+		cancel()
+	}
+	go ProcessReceivedMessages(ctx, sender)
 
 	<-ctx.Done()
 
 	log.Println("\nStopped consuming the Queue...")
 }
 
-func ProcessReceivedMessages() {
+func ProcessReceivedMessages(context context.Context, sender *Sender) {
 	count := 1
 
 	for r := range replies {
@@ -84,10 +98,24 @@ func ProcessReceivedMessages() {
 		v := amqpModels.Notification{}
 		json.Unmarshal(r.Body, &v)
 
+		sender.UpdateNotificationStatus(context, v.IdEvent)
+
 		fmt.Printf("\nIdEvent: %d,\nTitle: %s\nEventStart: %s\nIdUser: %d",
 			v.IdEvent, v.EventTitle, v.EventStart.String(), v.IdUser)
 		count++
 	}
+}
+
+func (s *Sender) UpdateNotificationStatus(ctx context.Context, eventID int64) error {
+	_, err := s.storage.DbQueries.UpdateEventNotificationStatus(
+		ctx, sqlc.UpdateEventNotificationStatusParams{
+			Notificationstatus: sql.NullInt32{Int32: _notificationSendedStatus, Valid: true},
+			ID:                 eventID,
+		})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func failOnError(err error, msg string) {

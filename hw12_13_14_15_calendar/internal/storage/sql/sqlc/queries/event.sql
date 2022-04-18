@@ -41,7 +41,7 @@ DELETE FROM events WHERE title like '%_test';
 SELECT * FROM events
 WHERE notification <= cast($1 as timestamp) 
   AND start_event > cast($1 as timestamp)
-  AND notificationSended is false
+  AND notificationStatus = 0
 ORDER BY id;
 
 -- name: DeleteExpiredEvents :exec
@@ -50,6 +50,6 @@ WHERE now() > end_event + INTERVAL '1 year';
 
 -- name: UpdateEventNotificationStatus :one
 UPDATE events 
-SET notificationSended = $1
+SET notificationStatus = $1
 WHERE id = $2
 RETURNING *;

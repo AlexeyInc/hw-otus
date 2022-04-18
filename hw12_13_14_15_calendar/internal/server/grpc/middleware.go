@@ -17,6 +17,10 @@ import (
 
 func addLoggingMiddleware(logger Logger) grpc.UnaryServerInterceptor {
 	return grpc.UnaryServerInterceptor(func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		if logger == nil {
+			return handler(ctx, req)
+		}
+
 		start := time.Now()
 		p, _ := peer.FromContext(ctx)
 		mD, _ := metadata.FromIncomingContext(ctx)
@@ -35,11 +39,11 @@ func addLoggingMiddleware(logger Logger) grpc.UnaryServerInterceptor {
 			return nil, err
 		}
 
-		str := fmt.Sprintf("gRPC request has been made...\nClientIP:%s;\nMethod:%s;\nStatusCode:%s;"+
+		msg := fmt.Sprintf("gRPC request has been made...\nClientIP:%s;\nMethod:%s;\nStatusCode:%s;"+
 			"\nContentLength:%d;\nLatency:%s;\nUser_agent:%s",
 			clientId, method, statucCode, contentLength, latency, userAgent)
 
-		logger.Info(str)
+		logger.Info(msg)
 
 		return h, err
 	})

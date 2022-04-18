@@ -22,8 +22,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type Period string
-
 const (
 	_day   = "Day"
 	_week  = "Week"
@@ -42,14 +40,14 @@ type EventModel struct {
 	EndEvent     time.Time `json:"endEvent,omitempty"`
 	Description  string    `json:"description,omitempty"`
 	IdUser       int64     `json:"idUser,omitempty,string"`
-	notification time.Time `json:"notification,omitempty"`
+	Notification time.Time `json:"notification,omitempty"`
 }
 
 type EventResponse struct {
 	Event EventModel
 }
 
-func TestEventAPI(t *testing.T) {
+func TestEventHTTP_API(t *testing.T) {
 	ts, ctx, storage := createAndLaunchTestServer()
 	defer ts.Close()
 
@@ -288,7 +286,7 @@ func createRandomEvent() map[string]interface{} {
 	return randEvent
 }
 
-func createRandomDbEventModels(p Period, count int) []models.Event {
+func createRandomDbEventModels(p util.Period, count int) []models.Event {
 	events := make([]models.Event, count)
 	for i := 0; i < count; i++ {
 		startEvent := p.GetTimePeriod()
@@ -305,18 +303,6 @@ func createRandomDbEventModels(p Period, count int) []models.Event {
 		}
 	}
 	return events
-}
-
-func (s Period) GetTimePeriod() time.Time {
-	switch s {
-	case "Day":
-		return time.Now().UTC()
-	case "Week":
-		return time.Now().AddDate(0, 0, 7).UTC()
-	case "Month":
-		return time.Now().AddDate(0, 0, 30).UTC()
-	}
-	return time.Now().UTC()
 }
 
 func addEventToStorage(ctx context.Context, storage *memorystorage.MemoryStorage, ev models.Event) int64 {

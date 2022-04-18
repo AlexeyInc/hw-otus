@@ -14,7 +14,6 @@ import (
 	internalgrpc "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/server/http"
 
-	// memorystorage "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/memory".
 	sqlstorage "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
@@ -56,11 +55,7 @@ func main() {
 
 	calendar := app.New(zapLogg, storage)
 
-	// Run gRPC Server...
-
 	go internalgrpc.RunGRPCServer(ctx, config, calendar, zapLogg)
-
-	// Run HTTP Server...
 
 	go internalhttp.RunHTTPServer(ctx, config, calendar, zapLogg)
 

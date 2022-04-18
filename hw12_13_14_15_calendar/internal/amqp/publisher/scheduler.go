@@ -18,7 +18,16 @@ import (
 	domainModels "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/models"
 )
 
-var _notificationInQueueStatus int32 = 1
+const _notificationInQueueStatus int32 = 1
+
+var (
+	configFile   = flag.String("config", "../../../configs/scheduler_config.toml", "Path to configuration file")
+	exchangeName = flag.String("exchange", "calendar-exchange", "Durable AMQP exchange name")
+	exchangeType = flag.String("exchangeType", "direct", "Exchange type - direct|fanout|topic|x-custom")
+	routingKey   = flag.String("routingKey", "notification-key", "AMQP routing key")
+	bindingKey   = flag.String("bindingKey", "notification-key", "AMQP binding key")
+	queueName    = flag.String("queueName", "event-notification-queue", "AMQP queue name")
+)
 
 type AMQPClient interface {
 	InitConnectionAndChannel() error
@@ -36,20 +45,7 @@ type Scheduler struct {
 	checkExpiredEventsFreqSeconds int
 }
 
-var (
-	configFile   = flag.String("config", "../../../configs/scheduler_config.toml", "Path to configuration file")
-	exchangeName = flag.String("exchange", "calendar-exchange", "Durable AMQP exchange name")
-	exchangeType = flag.String("exchangeType", "direct", "Exchange type - direct|fanout|topic|x-custom")
-	routingKey   = flag.String("routingKey", "notification-key", "AMQP routing key")
-	bindingKey   = flag.String("bindingKey", "notification-key", "AMQP binding key")
-	queueName    = flag.String("queueName", "event-notification-queue", "AMQP queue name")
-)
-
-func init() {
-	flag.Parse()
-}
-
-func New(c schedulerConfig.Config) *Scheduler {
+func newScheduler(c schedulerConfig.Config) *Scheduler {
 	return &Scheduler{
 		storage: &sqlstorage.Storage{
 			Driver: c.Storage.Driver,
@@ -65,23 +61,23 @@ func New(c schedulerConfig.Config) *Scheduler {
 
 func (scheduler *Scheduler) setupAMQP() {
 	err := scheduler.amqpClient.InitConnectionAndChannel()
-	failOnError(err, "Failed to initialize to AMQP client")
+	failOnError(err, "can't read config file")
 	log.Printf("AMQP Connection and Channel initialized")
 
-	scheduler.amqpClient.DeclareExchange(*exchangeName, *exchangeType)
-	failOnError(err, "Failed to declare the Exchange")
+	err = scheduler.amqpClient.DeclareExchange(*exchangeName, *exchangeType)
+	failOnError(err, "failed to declare the Exchange")
 	log.Printf("Declared Exchange :%s", *exchangeName)
 
-	scheduler.amqpClient.DeclareQueue(*queueName)
-	failOnError(err, "Failed to declare the Queue")
+	err = scheduler.amqpClient.DeclareQueue(*queueName)
+	failOnError(err, "failed to declare the Queue")
 	log.Printf("Declared Queue :%s", *queueName)
 
-	scheduler.amqpClient.BindQueue(*exchangeName, *queueName, *bindingKey)
-	failOnError(err, "Failed to bind to the Queue")
+	err = scheduler.amqpClient.BindQueue(*exchangeName, *queueName, *bindingKey)
+	failOnError(err, "failed to bind to the Queue")
 	log.Printf("Queue %s bound to %s with bindingKey %s", *queueName, *exchangeName, *bindingKey)
 }
 
-func (scheduler *Scheduler) GetEventNotifications(ctx context.Context) (eventModels []domainModels.Event, err error) {
+func (scheduler *Scheduler) getEventNotifications(ctx context.Context) (eventModels []domainModels.Event, err error) {
 	now := time.Now()
 	events, err := scheduler.storage.DbQueries.GetNotifyEvents(ctx, now)
 	if err != nil {
@@ -90,7 +86,7 @@ func (scheduler *Scheduler) GetEventNotifications(ctx context.Context) (eventMod
 	return toViewModels(events), err
 }
 
-func (scheduler *Scheduler) UpdateNotificationStatus(ctx context.Context, eventID int64) error {
+func (scheduler *Scheduler) updateNotificationStatus(ctx context.Context, eventID int64) error {
 	_, err := scheduler.storage.DbQueries.UpdateEventNotificationStatus(
 		ctx, sqlc.UpdateEventNotificationStatusParams{
 			Notificationstatus: sql.NullInt32{Int32: _notificationInQueueStatus, Valid: true},
@@ -102,17 +98,19 @@ func (scheduler *Scheduler) UpdateNotificationStatus(ctx context.Context, eventI
 	return nil
 }
 
-func (scheduler *Scheduler) DeleteExpiredEvents(ctx context.Context) (err error) {
+func (scheduler *Scheduler) deleteExpiredEvents(ctx context.Context) (err error) {
 	return scheduler.storage.DbQueries.DeleteExpiredEvents(ctx)
 }
 
 func main() {
+	flag.Parse()
+
 	log.Println("Starting publisher...")
 
 	config, err := schedulerConfig.NewConfig(*configFile)
 	failOnError(err, "can't read config file")
 
-	scheduler := New(config)
+	scheduler := newScheduler(config)
 	defer scheduler.amqpClient.Shutdown()
 
 	scheduler.setupAMQP()
@@ -125,28 +123,28 @@ func main() {
 		cancel()
 	}
 
-	go ProccesEventNotifications(context, scheduler)
+	go proccesEventNotifications(context, scheduler)
 
-	go DeleteExpiredEvents(context, scheduler)
+	go deleteExpiredEvents(context, scheduler)
 
 	<-context.Done()
 
 	log.Println("\nFinishing publishing...")
 }
 
-func ProccesEventNotifications(context context.Context, scheduler *Scheduler) {
+func proccesEventNotifications(context context.Context, scheduler *Scheduler) {
 	for {
 		log.Printf("Check on event notifications")
 
-		events, err := scheduler.GetEventNotifications(context)
+		events, err := scheduler.getEventNotifications(context)
 		failOnError(err, "error during getting event notifications")
 
 		if len(events) > 0 {
 			log.Printf("Got some events, count: %d\n", len(events))
 
 			for _, event := range events {
-				err := scheduler.UpdateNotificationStatus(context, event.ID)
-				failOnError(err, "error during udpating event notification status")
+				err := scheduler.updateNotificationStatus(context, event.ID)
+				failOnError(err, "failed to udpate event notification status")
 
 				notification := amqpModels.Notification{
 					IdEvent:    event.ID,
@@ -166,10 +164,10 @@ func ProccesEventNotifications(context context.Context, scheduler *Scheduler) {
 	}
 }
 
-func DeleteExpiredEvents(context context.Context, scheduler *Scheduler) {
+func deleteExpiredEvents(context context.Context, scheduler *Scheduler) {
 	for {
 		log.Println("Check on expired events")
-		err := scheduler.DeleteExpiredEvents(context)
+		err := scheduler.deleteExpiredEvents(context)
 		failOnError(err, "error during deleting expired events")
 
 		time.Sleep(time.Duration(scheduler.checkExpiredEventsFreqSeconds) * time.Second)

@@ -18,7 +18,15 @@ import (
 	"github.com/streadway/amqp"
 )
 
-var _notificationSendedStatus int32 = 2
+const _notificationSendedStatus int32 = 2
+
+var replies <-chan amqp.Delivery
+
+var (
+	configFile   = flag.String("config", "../../../configs/calendar_config.toml", "Path to configuration file")
+	queueName    = flag.String("queueName", "event-notification-queue", "AMQP queue name")
+	consumerName = flag.String("consumer-name", "sender-consumer", "AMQP consumer name (should not be blank)")
+)
 
 type AMQPClient interface {
 	InitConnectionAndChannel() error
@@ -31,19 +39,7 @@ type Sender struct {
 	amqpClient AMQPClient
 }
 
-var replies <-chan amqp.Delivery
-
-var (
-	configFile   = flag.String("config", "../../../configs/calendar_config.toml", "Path to configuration file")
-	queueName    = flag.String("queueName", "event-notification-queue", "AMQP queue name")
-	consumerName = flag.String("consumer-name", "sender-consumer", "AMQP consumer name (should not be blank)")
-)
-
-func init() {
-	flag.Parse()
-}
-
-func New(c senderConfig.Config) *Sender {
+func newSender(c senderConfig.Config) *Sender {
 	return &Sender{
 		amqpClient: &amqpClient.AMQPManager{
 			AmqpURI: c.AMQP.Source,
@@ -57,21 +53,23 @@ func New(c senderConfig.Config) *Sender {
 
 func (s *Sender) setupAMQP() {
 	err := s.amqpClient.InitConnectionAndChannel()
-	failOnError(err, "Failed to initialize to AMQP client")
+	failOnError(err, "failed to initialize AMQP client")
 
 	log.Printf("AMQP Connection and Channel initialized")
 
 	replies, err = s.amqpClient.Consume(*consumerName, *queueName)
-	failOnError(err, "Failed to consume message")
+	failOnError(err, "failed to consume from specified queue")
 }
 
 func main() {
+	flag.Parse()
+
 	log.Println("Start consuming the Queue...")
 
 	config, err := senderConfig.NewConfig(*configFile)
 	failOnError(err, "can't read config file")
 
-	sender := New(config)
+	sender := newSender(config)
 	defer sender.amqpClient.Shutdown()
 
 	sender.setupAMQP()
@@ -83,22 +81,25 @@ func main() {
 		failOnError(err, "can't connect to database")
 		cancel()
 	}
-	go ProcessReceivedMessages(ctx, sender)
+	go processReceivedMessages(ctx, sender)
 
 	<-ctx.Done()
 
 	log.Println("\nStopped consuming the Queue...")
 }
 
-func ProcessReceivedMessages(context context.Context, sender *Sender) {
+func processReceivedMessages(context context.Context, sender *Sender) {
 	count := 1
 
 	for r := range replies {
 		log.Printf("Consuming reply number %d", count)
-		v := amqpModels.Notification{}
-		json.Unmarshal(r.Body, &v)
 
-		sender.UpdateNotificationStatus(context, v.IdEvent)
+		v := amqpModels.Notification{}
+		err := json.Unmarshal(r.Body, &v)
+		failOnError(err, "can't unmarshal response body")
+
+		err = sender.updateNotificationStatus(context, v.IdEvent)
+		failOnError(err, "can't update notification status")
 
 		fmt.Printf("\nIdEvent: %d,\nTitle: %s\nEventStart: %s\nIdUser: %d",
 			v.IdEvent, v.EventTitle, v.EventStart.String(), v.IdUser)
@@ -106,7 +107,7 @@ func ProcessReceivedMessages(context context.Context, sender *Sender) {
 	}
 }
 
-func (s *Sender) UpdateNotificationStatus(ctx context.Context, eventID int64) error {
+func (s *Sender) updateNotificationStatus(ctx context.Context, eventID int64) error {
 	_, err := s.storage.DbQueries.UpdateEventNotificationStatus(
 		ctx, sqlc.UpdateEventNotificationStatusParams{
 			Notificationstatus: sql.NullInt32{Int32: _notificationSendedStatus, Valid: true},
@@ -121,6 +122,5 @@ func (s *Sender) UpdateNotificationStatus(ctx context.Context, eventID int64) er
 func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
-		panic(fmt.Sprintf("%s: %s", msg, err))
 	}
 }

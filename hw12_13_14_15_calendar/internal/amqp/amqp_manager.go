@@ -6,6 +6,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
+const _contentType = "application/json"
+
 type AMQPManager struct {
 	AmqpURI string
 	conn    *amqp.Connection
@@ -37,7 +39,7 @@ func (amqpManager *AMQPManager) Publish(payload []byte, exchangeName, routingKey
 		false,
 		amqp.Publishing{
 			DeliveryMode: amqp.Transient,
-			ContentType:  "application/json",
+			ContentType:  _contentType,
 			Body:         payload,
 			Timestamp:    time.Now(),
 		})
@@ -51,7 +53,7 @@ func (amqpManager *AMQPManager) Consume(consumerName, queueName string) (<-chan 
 	replies, err := amqpManager.ch.Consume(
 		queueName,
 		consumerName,
-		true, // auto-ack
+		true,
 		false,
 		false,
 		false,
@@ -82,7 +84,7 @@ func (amqpManager *AMQPManager) DeclareExchange(exchangeName, exchangeKind strin
 func (amqpManager *AMQPManager) DeclareQueue(queueName string) error {
 	_, err := amqpManager.ch.QueueDeclare(
 		queueName,
-		true, // durable
+		true,
 		false,
 		false,
 		false,

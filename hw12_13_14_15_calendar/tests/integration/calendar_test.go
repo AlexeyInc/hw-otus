@@ -80,10 +80,6 @@ func (s *CalendarSuite) SetupSuite() {
 	checkEventsNotifFreq = numSec
 }
 
-func (s *CalendarSuite) SetupTest() {
-
-}
-
 func (s *CalendarSuite) TearDownSuite() {
 	s.sqlDB.Close()
 	s.serverConn.Close()

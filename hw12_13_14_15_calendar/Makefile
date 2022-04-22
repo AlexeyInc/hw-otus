@@ -56,7 +56,7 @@ version: build
 	$(BIN) version
 
 test:
-	go test -race ./internal/storage/memory ./internal/storage/sql/sqlc
+	go test -race ./internal/storage/memory ./internal/storage/sql/sqlc ./api
 
 run-integration-tests:
 	cd deployments; docker-compose -f docker-compose.yml -f docker-compose.test.yml up \

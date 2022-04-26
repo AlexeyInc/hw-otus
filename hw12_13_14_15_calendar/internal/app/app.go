@@ -112,7 +112,8 @@ func (a *App) UpdateEvent(ctx context.Context, req *api.UpdateEventRequest) (*ap
 	return response, err
 }
 
-func (a *App) DeleteEvent(ctx context.Context, req *api.DeleteEventRequest) (response *api.EmptyResponse, err error) {
+func (a *App) DeleteEvent(ctx context.Context,
+	req *api.DeleteEventRequest) (response *api.EmptyResponse, err error) {
 	err = a.storage.DeleteEvent(ctx, req.Id)
 	response = &api.EmptyResponse{
 		Success: err == nil,
@@ -120,19 +121,22 @@ func (a *App) DeleteEvent(ctx context.Context, req *api.DeleteEventRequest) (res
 	return
 }
 
-func (a *App) GetDayEvents(ctx context.Context, day *api.GetEventsByDayRequest) (*api.GetEventsResponse, error) {
+func (a *App) GetDayEvents(ctx context.Context,
+	day *api.GetEventsByDayRequest) (*api.GetEventsResponse, error) {
 	eventsDto, err := a.storage.GetDayEvents(ctx, day.Day.AsTime())
 
 	return toResposeModels(eventsDto), err
 }
 
-func (a *App) GetWeekEvents(ctx context.Context, weekStart *api.GetEventsByWeekRequest) (*api.GetEventsResponse, error) {
+func (a *App) GetWeekEvents(ctx context.Context,
+	weekStart *api.GetEventsByWeekRequest) (*api.GetEventsResponse, error) {
 	eventsDto, err := a.storage.GetWeekEvents(ctx, weekStart.WeekStart.AsTime())
 
 	return toResposeModels(eventsDto), err
 }
 
-func (a *App) GetMonthEvents(ctx context.Context, monthStart *api.GetEventsByMonthRequest) (*api.GetEventsResponse, error) {
+func (a *App) GetMonthEvents(ctx context.Context,
+	monthStart *api.GetEventsByMonthRequest) (*api.GetEventsResponse, error) {
 	eventsDto, err := a.storage.GetMonthEvents(ctx, monthStart.MonthStart.AsTime())
 
 	return toResposeModels(eventsDto), err

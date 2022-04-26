@@ -46,7 +46,8 @@ func RunHTTPServer(context context.Context, config calendarconfig.Config, app ap
 	}
 }
 
-func NewServer(context context.Context, config calendarconfig.Config, app api.EventServiceServer, logger Logger) *Server {
+func NewServer(context context.Context,
+	config calendarconfig.Config, app api.EventServiceServer, logger Logger) *Server {
 	mux := runtime.NewServeMux()
 
 	err := api.RegisterEventServiceHandlerServer(context, mux, app)

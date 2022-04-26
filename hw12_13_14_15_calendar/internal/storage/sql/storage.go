@@ -10,12 +10,12 @@ import (
 	sqlc "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/internal/storage/sql/sqlc"
 	domainModels "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/models"
 
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" //nolint
 )
 
 type Storage struct {
 	db        *sql.DB
-	DbQueries *sqlc.Queries
+	DBQueries *sqlc.Queries
 
 	Driver string
 	Source string
@@ -40,7 +40,7 @@ func (s *Storage) Connect(ctx context.Context) error {
 		return connErr
 	}
 
-	s.DbQueries = sqlc.New(db)
+	s.DBQueries = sqlc.New(db)
 
 	return nil
 }
@@ -59,7 +59,7 @@ func (s *Storage) CreateEvent(ctx context.Context, event domainModels.Event) (do
 		Notification: sql.NullTime{Time: event.Notification, Valid: true},
 	}
 
-	createdModel, err := s.DbQueries.CreateEvent(ctx, createEvent)
+	createdModel, err := s.DBQueries.CreateEvent(ctx, createEvent)
 
 	return toViewModel(createdModel), err
 }
@@ -75,17 +75,17 @@ func (s *Storage) UpdateEvent(ctx context.Context, event domainModels.Event) (do
 		Notification: sql.NullTime{Time: event.Notification, Valid: true},
 	}
 
-	updatedEvent, err := s.DbQueries.UpdateEvent(ctx, updateEvent)
+	updatedEvent, err := s.DBQueries.UpdateEvent(ctx, updateEvent)
 
 	return toViewModel(updatedEvent), err
 }
 
 func (s *Storage) DeleteEvent(ctx context.Context, id int64) error {
-	return s.DbQueries.DeleteEvent(ctx, id)
+	return s.DBQueries.DeleteEvent(ctx, id)
 }
 
 func (s *Storage) GetEvent(ctx context.Context, id int64) (eventModel domainModels.Event, err error) {
-	event, err := s.DbQueries.GetEvent(ctx, id)
+	event, err := s.DBQueries.GetEvent(ctx, id)
 	if err != nil {
 		return eventModel, err
 	}
@@ -93,7 +93,7 @@ func (s *Storage) GetEvent(ctx context.Context, id int64) (eventModel domainMode
 }
 
 func (s *Storage) GetDayEvents(ctx context.Context, day time.Time) (eventModels []domainModels.Event, err error) {
-	events, err := s.DbQueries.GetDayEvents(ctx, day)
+	events, err := s.DBQueries.GetDayEvents(ctx, day)
 	if err != nil {
 		return eventModels, err
 	}
@@ -101,7 +101,7 @@ func (s *Storage) GetDayEvents(ctx context.Context, day time.Time) (eventModels 
 }
 
 func (s Storage) GetWeekEvents(ctx context.Context, weekStart time.Time) (eventModels []domainModels.Event, err error) {
-	events, err := s.DbQueries.GetWeekEvents(ctx, weekStart)
+	events, err := s.DBQueries.GetWeekEvents(ctx, weekStart)
 	if err != nil {
 		return eventModels, err
 	}
@@ -109,7 +109,7 @@ func (s Storage) GetWeekEvents(ctx context.Context, weekStart time.Time) (eventM
 }
 
 func (s Storage) GetMonthEvents(ctx context.Context, monthStart time.Time) (evModels []domainModels.Event, err error) {
-	events, err := s.DbQueries.GetMonthEvents(ctx, monthStart)
+	events, err := s.DBQueries.GetMonthEvents(ctx, monthStart)
 	if err != nil {
 		return evModels, err
 	}
@@ -130,7 +130,7 @@ func toViewModel(ev sqlc.Event) domainModels.Event {
 
 func toViewModels(events []sqlc.Event) []domainModels.Event {
 	result := make([]domainModels.Event, len(events))
-	for i, event := range events { //nolint
+	for i, event := range events {
 		result[i] = toViewModel(event)
 	}
 	return result

@@ -15,8 +15,8 @@ func createRandomEvent(t *testing.T) models.Event {
 	t.Helper()
 	event := models.Event{
 		Title:       util.RandomTitle(),
-		StartEvent:  time.Now().Local().UTC(),
-		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
+		StartEvent:  time.Now().UTC(),
+		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).UTC(),
 		Description: util.RandomDescription(),
 		IDUser:      util.RandomUserID(),
 	}
@@ -46,6 +46,7 @@ func TestGetEvent(t *testing.T) {
 	require.Equal(t, newEvent.EndEvent, event.EndEvent)
 	require.Equal(t, newEvent.Description, event.Description)
 	require.Equal(t, newEvent.IDUser, event.IDUser)
+	require.Equal(t, newEvent.Notification, event.Notification)
 }
 
 func TestDeleteEvent(t *testing.T) {
@@ -67,8 +68,8 @@ func TestUpdateEvent(t *testing.T) {
 	event := models.Event{
 		ID:          1,
 		Title:       util.RandomTitle() + "_test",
-		StartEvent:  time.Now().Local().UTC(),
-		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
+		StartEvent:  time.Now().UTC(),
+		EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).UTC(),
 		Description: util.RandomDescription(),
 		IDUser:      util.RandomUserID(),
 	}
@@ -81,6 +82,7 @@ func TestUpdateEvent(t *testing.T) {
 	require.Equal(t, event.EndEvent, updatedEvent.EndEvent)
 	require.Equal(t, event.Description, updatedEvent.Description)
 	require.Equal(t, event.IDUser, updatedEvent.IDUser)
+	require.Equal(t, event.Notification, updatedEvent.Notification)
 }
 
 func TestGetWeekEvents(t *testing.T) {
@@ -99,8 +101,8 @@ func TestGetWeekEvents(t *testing.T) {
 		date = events[i].StartEvent
 
 		require.WithinDuration(t,
-			lastEvent.StartEvent.Local().UTC(),
-			date.Local().UTC(),
+			lastEvent.StartEvent.UTC(),
+			date.UTC(),
 			week)
 	}
 }
@@ -121,8 +123,8 @@ func TestGetMonthEvents(t *testing.T) {
 		date = events[i].StartEvent
 
 		require.WithinDuration(t,
-			lastEvent.StartEvent.Local().UTC(),
-			date.Local().UTC(),
+			lastEvent.StartEvent.UTC(),
+			date.UTC(),
 			month)
 	}
 }
@@ -131,8 +133,8 @@ func TestDataRaceOnCRUD(t *testing.T) {
 	for i := 0; i < 30; i++ {
 		event := models.Event{
 			Title:       util.RandomTitle(),
-			StartEvent:  time.Now().Local().UTC(),
-			EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).Local().UTC(),
+			StartEvent:  time.Now().UTC(),
+			EndEvent:    time.Now().AddDate(0, 0, util.RandomInt(100)).UTC(),
 			Description: util.RandomDescription(),
 			IDUser:      util.RandomUserID(),
 		}

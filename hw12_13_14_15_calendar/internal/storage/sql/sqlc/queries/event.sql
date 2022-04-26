@@ -1,8 +1,8 @@
 -- name: CreateEvent :one
 INSERT INTO events (
-  title, start_event, end_event, description, id_user
+  title, start_event, end_event, description, id_user, notification
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6
 )
 RETURNING *;
 
@@ -27,7 +27,7 @@ ORDER BY start_event;
 
 -- name: UpdateEvent :one
 UPDATE events 
-SET title =  $2, start_event = $3, end_event = $4, description = $5, id_user = $6
+SET title =  $2, start_event = $3, end_event = $4, description = $5, id_user = $6, notification = $7
 WHERE id = $1
 RETURNING *;
 
@@ -36,3 +36,20 @@ DELETE FROM events WHERE id = $1;
 
 -- name: DeleteTestEvents :exec
 DELETE FROM events WHERE title like '%_test';
+
+-- name: GetNotifyEvents :many
+SELECT * FROM events
+WHERE notification <= cast($1 as timestamp) 
+  AND start_event > cast($1 as timestamp)
+  AND notificationSended is false
+ORDER BY id;
+
+-- name: DeleteExpiredEvents :exec
+DELETE FROM events 
+WHERE now() > end_event + INTERVAL '1 year';
+
+-- name: UpdateEventNotificationStatus :one
+UPDATE events 
+SET notificationSended = $1
+WHERE id = $2
+RETURNING *;

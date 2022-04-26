@@ -2,49 +2,78 @@ package internalhttp
 
 import (
 	"context"
-	"io"
+	"log"
 	"net/http"
-	"os"
 
-	"github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
+	api "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/api/protoc"
+	calendarconfig "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/configs"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 )
-
-type Server struct {
-	Host string
-	Port string
-}
 
 type Logger interface {
 	Info(msg string)
 	Error(msg string)
 }
 
-type Application interface { // TODO
+type Server struct {
+	httpServer *http.Server
 }
 
-func myHandler(res http.ResponseWriter, req *http.Request) {
-	io.WriteString(res, "Hello world!")
-}
+func RunHTTPServer(context context.Context, config calendarconfig.Config, app api.EventServiceServer, logger Logger) {
+	mux := runtime.NewServeMux()
 
-func NewServer(logger Logger, config configs.Config, app Application) *Server {
-	http.Handle("/", loggingMiddleware(logger, http.HandlerFunc(myHandler)))
+	err := api.RegisterEventServiceHandlerServer(context, mux, app)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	return &Server{
-		Host: config.Server.Host,
-		Port: config.Server.Port,
+	s := &http.Server{
+		Addr:    config.HTTPServer.Host + config.HTTPServer.Port,
+		Handler: addLoggingMiddleware(logger, mux),
+	}
+
+	go func() {
+		logger.Info("calendar HTTP server is running...")
+		if err := s.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatal("Failed to listen and serve: ", err)
+		}
+	}()
+
+	<-context.Done()
+
+	if err := s.Close(); err != nil {
+		log.Fatal("failed to close http server: ", err)
 	}
 }
 
-func (s *Server) Start(ctx context.Context) error {
-	http.ListenAndServe(s.Host+s.Port, nil)
+func NewServer(context context.Context, config calendarconfig.Config, app api.EventServiceServer, logger Logger) *Server {
+	mux := runtime.NewServeMux()
 
-	<-ctx.Done()
-	return nil
+	err := api.RegisterEventServiceHandlerServer(context, mux, app)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s := &http.Server{
+		Addr:    config.HTTPServer.Host + config.HTTPServer.Port,
+		Handler: addLoggingMiddleware(logger, mux),
+	}
+	return &Server{
+		httpServer: s,
+	}
 }
 
-func (s *Server) Stop(ctx context.Context) error {
-	os.Exit(1)
-	return nil
+func (server *Server) Start(ctx context.Context) (err error) {
+	if err = server.httpServer.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatal("Failed to listen and serve: ", err)
+		return
+	}
+	return
 }
 
-// TODO
+func (server *Server) Stop(ctx context.Context) (err error) {
+	if err = server.httpServer.Shutdown(ctx); err != nil {
+		log.Fatal("Failed to shutdown http server: ", err)
+	}
+	return
+}

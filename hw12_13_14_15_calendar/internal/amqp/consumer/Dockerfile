@@ -9,7 +9,7 @@ RUN go mod download
 COPY . ./
 
 RUN CGO_ENABLED=0 GOOS=linux \
-    go build -o sender internal/amqp/consumer/sender.go
+    go build -o sender cmd/sender/main.go
 
 FROM alpine:3.14
 

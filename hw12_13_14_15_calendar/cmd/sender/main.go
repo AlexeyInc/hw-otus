@@ -35,7 +35,11 @@ func main() {
 	ctx, _ := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
-	go sender.ProcessReceivedMessages()
+	if err := sender.Storage.Connect(ctx); err != nil {
+		failOnError(err, "can't connect to database")
+	}
+
+	go sender.ProcessReceivedMessages(ctx)
 
 	<-ctx.Done()
 

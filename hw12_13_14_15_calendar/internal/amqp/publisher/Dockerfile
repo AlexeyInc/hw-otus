@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN CGO_ENABLED=0 go build -o scheduler internal/amqp/publisher/scheduler.go
+RUN CGO_ENABLED=0 go build -o scheduler cmd/scheduler/main.go
 
 FROM alpine:3.14
 

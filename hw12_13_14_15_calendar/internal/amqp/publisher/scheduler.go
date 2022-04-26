@@ -74,6 +74,8 @@ func (s *Scheduler) GetEventNotifications(ctx context.Context) (eventModels []do
 
 func (s *Scheduler) ProccesEventNotifications(context context.Context, exchangeName, routingKey string) {
 	for {
+		log.Println("Check on events notifications")
+
 		events, err := s.GetEventNotifications(context)
 		failOnError(err, "error during getting event notifications")
 

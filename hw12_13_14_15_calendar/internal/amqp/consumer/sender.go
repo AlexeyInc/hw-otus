@@ -44,11 +44,11 @@ func (s *Sender) SetupAMQP(consumerName, queueName string) {
 func (s *Sender) ProcessReceivedMessages() {
 	count := 1
 	for r := range replies {
-		log.Printf("Consuming reply number %d", count)
+		log.Printf("Consuming event number %d", count)
 		v := amqpModels.Notification{}
 		json.Unmarshal(r.Body, &v)
 
-		fmt.Printf("IdEvent: %d,\nTitle: %s\nEventStart: %s\nIdUser: %d",
+		fmt.Printf("\nIdEvent: %d,\nTitle: %s\nEventStart: %s\nIdUser: %d",
 			v.IDEvent, v.EventTitle, v.EventStart.String(), v.IDUser)
 		count++
 	}

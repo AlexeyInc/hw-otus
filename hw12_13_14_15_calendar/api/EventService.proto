@@ -17,49 +17,6 @@ message Event {
     google.protobuf.Timestamp notification = 7;
 }
 
-service EventService {
-    rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse) {
-        option (google.api.http) = {
-            post: "/v1/EventService"
-            body: "*"
-        };
-    }
-    rpc GetEvent (GetEventRequest) returns (GetEventResponse) {
-        option (google.api.http) = {
-            get: "/v1/EventService/{id}"
-        };
-    }
-    rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse) {
-        option (google.api.http) = {
-			put: "/v1/EventService"
-			body: "*"
-		};
-    }
-    rpc DeleteEvent(DeleteEventRequest) returns (EmptyResponse) {
-        option (google.api.http) = {
-			delete: "/v1/EventService/{id}"
-		};
-    }
-
-    rpc GetDayEvents(GetEventsByDayRequest) returns (GetEventsResponse) {
-        option (google.api.http) = {
-            get: "/v1/EventService/Day/{day}"
-        };
-    }
-
-    rpc GetWeekEvents(GetEventsByWeekRequest) returns (GetEventsResponse) {
-        option (google.api.http) = {
-            get: "/v1/EventService/Week/{weekStart}"
-        };
-    }
-
-    rpc GetMonthEvents(GetEventsByMonthRequest) returns (GetEventsResponse) {
-        option (google.api.http) = {
-            get: "/v1/EventService/Month/{monthStart}"
-        };
-    }
-}
-
 message CreateEventRequest {
     string title = 1;
     google.protobuf.Timestamp start_event = 2;
@@ -69,7 +26,9 @@ message CreateEventRequest {
     google.protobuf.Timestamp notification = 6;
 }
 
-message CreateEventResponse { Event event = 1; }
+message CreateEventResponse { 
+    Event event = 1; 
+}
 
 message GetEventRequest {
     int64 id = 1;
@@ -113,4 +72,47 @@ message GetEventsByMonthRequest {
 
 message GetEventsResponse {
     repeated Event event = 1;
+}
+
+service EventService {
+    rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse) {
+        option (google.api.http) = {
+            post: "/v1/EventService"
+            body: "*"
+        };
+    }
+    rpc GetEvent (GetEventRequest) returns (GetEventResponse) {
+        option (google.api.http) = {
+            get: "/v1/EventService/{id}"
+        };
+    }
+    rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse) {
+        option (google.api.http) = {
+			put: "/v1/EventService"
+			body: "*"
+		};
+    }
+    rpc DeleteEvent(DeleteEventRequest) returns (EmptyResponse) {
+        option (google.api.http) = {
+			delete: "/v1/EventService/{id}"
+		};
+    }
+
+    rpc GetDayEvents(GetEventsByDayRequest) returns (GetEventsResponse) {
+        option (google.api.http) = {
+            get: "/v1/EventService/Day/{day}"
+        };
+    }
+
+    rpc GetWeekEvents(GetEventsByWeekRequest) returns (GetEventsResponse) {
+        option (google.api.http) = {
+            get: "/v1/EventService/Week/{weekStart}"
+        };
+    }
+
+    rpc GetMonthEvents(GetEventsByMonthRequest) returns (GetEventsResponse) {
+        option (google.api.http) = {
+            get: "/v1/EventService/Month/{monthStart}"
+        };
+    }
 }

@@ -59,6 +59,8 @@ func main() {
 
 	go internalhttp.RunHTTPServer(ctx, config, calendar, zapLogg)
 
+	log.Println("Calendar service started")
+
 	<-ctx.Done()
 
 	zapLogg.Info("\nAll servers are stopped...")

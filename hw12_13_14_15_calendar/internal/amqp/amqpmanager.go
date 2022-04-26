@@ -9,13 +9,13 @@ import (
 const _contentType = "application/json"
 
 type AMQPManager struct {
-	AmqpURI string
+	AMQPURI string
 	conn    *amqp.Connection
 	ch      *amqp.Channel
 }
 
 func (amqpManager *AMQPManager) InitConnectionAndChannel() error {
-	conn, err := amqp.Dial(amqpManager.AmqpURI)
+	conn, err := amqp.Dial(amqpManager.AMQPURI)
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,6 @@ func (amqpManager *AMQPManager) DeclareQueue(queueName string) error {
 		false,
 		nil,
 	)
-
 	if err != nil {
 		return err
 	}

@@ -48,7 +48,8 @@ func RunGRPCServer(context context.Context, config calendarconfig.Config, app ap
 	fmt.Println("gRPC server closed.")
 }
 
-func NewServer(context context.Context, config calendarconfig.Config, app api.EventServiceServer, logger Logger) *Server {
+func NewServer(context context.Context,
+	config calendarconfig.Config, app api.EventServiceServer, logger Logger) *Server {
 	gRPCServer := grpc.NewServer(
 		grpc.UnaryInterceptor(addLoggingMiddleware(logger)),
 	)

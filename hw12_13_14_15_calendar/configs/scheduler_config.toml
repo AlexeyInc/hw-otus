@@ -6,5 +6,5 @@ driver = "postgres"
 source = "postgres://alex:secret@localhost:5432/calendar?sslmode=disable"
 
 [scheduler]
-checkNotificationFreqSeconds = 300
-checkExpiredEventsFreqSeconds = 3600
+checkNotificationFreqMinutes = 3
+checkExpiredEventsFreqMinutes = 10

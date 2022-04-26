@@ -9,15 +9,15 @@ INTEG_TEST_ING="calendar_tests:integration"
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
 
-.PHONY: build run version test lint postgres createdb dropdb migrateup migratedown sqlc-gen api-gen \
+.PHONY: build run version test lint postgres createdb dropdb migrateup migratedown sqlc-gen api-gen generate \
 build-calend-img build-sched-img build-send-img build-integ-tests-img \
 run-calend-img run-sched-img run-send-img \
-integration-tests up down
+integration-tests up down 
 
 build:
 	go build -v -o $(BIN_CALENDAR) -ldflags "$(LDFLAGS)" ./cmd/calendar; \
-	go build -v -o $(BIN_SCHEDULER) -ldflags "$(LDFLAGS)" ./internal/amqp/publisher; \
-	go build -v -o $(BIN_SENDER) -ldflags "$(LDFLAGS)" ./internal/amqp/consumer
+	go build -v -o $(BIN_SCHEDULER) -ldflags "$(LDFLAGS)" ./cmd/scheduler; \
+	go build -v -o $(BIN_SENDER) -ldflags "$(LDFLAGS)" ./cmd/sender
 
 run: build
 	$(BIN_CALENDAR) -config ./configs/calendar_config.toml -log ./log/logs.log
@@ -56,7 +56,7 @@ version: build
 	$(BIN) version
 
 test:
-	go test -race ./internal/storage/memory ./internal/storage/sql/sqlc ./api
+	go test -race ./internal/storage/memory ./api
 
 run-integration-tests:
 	cd deployments; docker-compose -f docker-compose.yml -f docker-compose.test.yml up \
@@ -95,4 +95,4 @@ up:
 down: 
 	cd deployments; docker-compose down --remove-orphans
 
-
+generate: api-gen

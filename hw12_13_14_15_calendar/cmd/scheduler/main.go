@@ -39,7 +39,7 @@ func main() {
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
 	if err := scheduler.Storage.Connect(ctx); err != nil {
-		failOnError(err, "can't connect to database")
+		log.Fatalf("%s: %s", "can't connect to database", err)
 	}
 
 	go scheduler.ProccesEventNotifications(ctx, *exchangeName, *routingKey)

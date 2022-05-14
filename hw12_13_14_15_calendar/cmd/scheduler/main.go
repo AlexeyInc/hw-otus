@@ -35,11 +35,12 @@ func main() {
 
 	scheduler.SetupAMQP(*exchangeName, *exchangeType, *queueName, *bindingKey)
 
-	ctx, _ := signal.NotifyContext(context.Background(),
+	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer cancel()
 
-	if err := scheduler.Storage.Connect(ctx); err != nil {
-		log.Fatalf("%s: %s", "can't connect to database", err)
+	if err = scheduler.Storage.Connect(ctx); err != nil {
+		failOnError(err, "can't connect to database")
 	}
 
 	go scheduler.ProccesEventNotifications(ctx, *exchangeName, *routingKey)

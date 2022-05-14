@@ -2,6 +2,7 @@ package util
 
 import (
 	"crypto/rand"
+	"log"
 	"math/big"
 	"strings"
 )
@@ -12,9 +13,21 @@ const (
 	alphabet = "abcdefghijklmnopqrstuvwxyz"
 )
 
-func RandomInt(max int) int {
-	randNum, _ := rand.Int(rand.Reader, big.NewInt(int64(max)))
-	return int(randNum.Int64())
+func RandomInt(max int64) int {
+	nBig, err := rand.Int(rand.Reader, big.NewInt(max))
+	if err != nil {
+		log.Fatal(err)
+	}
+	res := nBig.Int64()
+	return int(res)
+}
+
+func RandomIntRange(min, max int64) int {
+	nBig, err := rand.Int(rand.Reader, big.NewInt(max-min+1))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return int(nBig.Int64() + min)
 }
 
 func RandomString(n int) string {
@@ -22,7 +35,7 @@ func RandomString(n int) string {
 	k := len(alphabet)
 
 	for i := 0; i < n; i++ {
-		c := alphabet[RandomInt(k)]
+		c := alphabet[RandomInt(int64(k))]
 		sb.WriteByte(c)
 	}
 
@@ -37,8 +50,8 @@ func RandomDescription() string {
 	return RandomString(descLen)
 }
 
-func RandomUserID() int64 { // TODO: Remove after add User logic
+func RandomUserID() int64 {
 	users := []int64{1, 2}
 	n := len(users)
-	return users[RandomInt(n)]
+	return users[RandomInt(int64(n))]
 }

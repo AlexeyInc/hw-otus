@@ -15,6 +15,8 @@ import (
 	domainModels "github.com/AlexeyInc/hw-otus/hw12_13_14_15_calendar/models"
 )
 
+const _notificationInQueueStatus int32 = 1
+
 type AMQPManager interface {
 	InitConnectionAndChannel() error
 	Publish(payload []byte, exchangeName, routingKey string) error
@@ -27,8 +29,8 @@ type AMQPManager interface {
 type Scheduler struct {
 	AMQPManager
 	*sqlstorage.Storage
-	checkNotificationFreqMinutes  int
-	checkExpiredEventsFreqMinutes int
+	checkNotificationFreqSeconds  int
+	checkExpiredEventsFreqSeconds int
 }
 
 func New(c schedulerConfig.Config) *Scheduler {
@@ -40,8 +42,8 @@ func New(c schedulerConfig.Config) *Scheduler {
 		AMQPManager: &amqpManager.AMQPManager{
 			AMQPURI: c.AMQP.Source,
 		},
-		checkNotificationFreqMinutes:  c.Scheduler.CheckNotificationFreqMinutes,
-		checkExpiredEventsFreqMinutes: c.Scheduler.CheckExpiredEventsFreqMinutes,
+		checkNotificationFreqSeconds:  c.Scheduler.CheckNotificationFreqSeconds,
+		checkExpiredEventsFreqSeconds: c.Scheduler.CheckExpiredEventsFreqSeconds,
 	}
 }
 
@@ -63,20 +65,11 @@ func (s *Scheduler) SetupAMQP(exchangeName, exchangeType, queueName, bindingKey 
 	log.Printf("Queue %s bound to %s with bindingKey %s", queueName, exchangeName, bindingKey)
 }
 
-func (s *Scheduler) GetEventNotifications(ctx context.Context) (eventModels []domainModels.Event, err error) {
-	now := time.Now()
-	events, err := s.Storage.DBQueries.GetNotifyEvents(ctx, now)
-	if err != nil {
-		return eventModels, err
-	}
-	return toViewModels(events), err
-}
-
 func (s *Scheduler) ProccesEventNotifications(context context.Context, exchangeName, routingKey string) {
 	for {
 		log.Println("Check on events notifications")
 
-		events, err := s.GetEventNotifications(context)
+		events, err := s.getEventNotifications(context)
 		failOnError(err, "error during getting event notifications")
 
 		if len(events) > 0 {
@@ -100,7 +93,7 @@ func (s *Scheduler) ProccesEventNotifications(context context.Context, exchangeN
 				failOnError(err, "Failed to public message")
 			}
 		}
-		time.Sleep(time.Duration(s.checkNotificationFreqMinutes) * time.Minute)
+		time.Sleep(time.Duration(s.checkNotificationFreqSeconds) * time.Second)
 	}
 }
 
@@ -110,14 +103,23 @@ func (s *Scheduler) DeleteExpiredEvents(context context.Context) {
 		err := s.Storage.DBQueries.DeleteExpiredEvents(context)
 		failOnError(err, "error during deleting expired events")
 
-		time.Sleep(time.Duration(s.checkExpiredEventsFreqMinutes) * time.Minute)
+		time.Sleep(time.Duration(s.checkExpiredEventsFreqSeconds) * time.Minute)
 	}
+}
+
+func (s *Scheduler) getEventNotifications(ctx context.Context) (eventModels []domainModels.Event, err error) {
+	now := time.Now()
+	events, err := s.Storage.DBQueries.GetNotifyEvents(ctx, now)
+	if err != nil {
+		return eventModels, err
+	}
+	return toViewModels(events), err
 }
 
 func (s *Scheduler) updateNotificationStatus(ctx context.Context, eventID int64) error {
 	_, err := s.Storage.DBQueries.UpdateEventNotificationStatus(
 		ctx, sqlc.UpdateEventNotificationStatusParams{
-			Notificationsended: sql.NullBool{Bool: true, Valid: true},
+			Notificationstatus: sql.NullInt32{Int32: _notificationInQueueStatus, Valid: true},
 			ID:                 eventID,
 		})
 	if err != nil {

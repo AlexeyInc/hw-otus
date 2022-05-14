@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+
+  integration_tests:
+    build:
+      context: ../.
+      dockerfile: ./tests/integration/integration-tests.Dockerfile
+    image: calendar_tests:integration
+    environment:
+      CALENDAR_SERVER_HOST: "calendar-app:8081"
+      CALENDAR_DB_SOURCE: "postgres://alex:secret@calendardb:5432/calendar?sslmode=disable"
+      CHECK_NOTIFICATION_SEC: "3"
+    depends_on:
+      calendar:
+        condition: service_started
+      scheduler:
+        condition: service_started
+      sender:
+        condition: service_started
+  
+  scheduler:
+    environment:
+      SCHEDULER_CHECKNOTIFICATIONFREQSECONDS: "3"

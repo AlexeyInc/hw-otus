@@ -2,6 +2,7 @@ package internalhttp
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -34,6 +35,8 @@ func RunHTTPServer(context context.Context, config calendarconfig.Config, app ap
 
 	go func() {
 		logger.Info("calendar HTTP server is running...")
+		fmt.Println("calendar HTTP server is running..")
+
 		if err := s.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatal("Failed to listen and serve: ", err)
 		}
@@ -44,6 +47,7 @@ func RunHTTPServer(context context.Context, config calendarconfig.Config, app ap
 	if err := s.Close(); err != nil {
 		log.Fatal("failed to close http server: ", err)
 	}
+	fmt.Println("http server closed.")
 }
 
 func NewServer(context context.Context,

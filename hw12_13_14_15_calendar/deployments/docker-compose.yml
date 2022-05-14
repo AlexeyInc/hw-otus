@@ -1,0 +1,98 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    container_name: calendardb
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: "calendar"
+      POSTGRES_USER: "alex"
+      POSTGRES_PASSWORD: "secret"
+    volumes:
+      - ../migrations/000001_init_schema.up.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alex -d calendar"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    command: postgres -c stats_temp_directory=/tmp
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+      - ./rabbit-mq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  calendar:
+    build:
+      context: ../.
+      dockerfile: ./Dockerfile
+    image: calendar:develop
+    container_name: calendar-app
+    environment:
+      STORAGE_SOURCE: "postgres://alex:secret@calendardb:5432/calendar?sslmode=disable"
+      HTTPSERVER_HOST: "calendar-app"
+      GRPCSERVER_HOST: "calendar-app"
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    command: ./app/calendar -config=/config/config.toml -log=/log/logs.log
+    restart: on-failure
+
+  scheduler:
+    build:
+      context: ../.
+      dockerfile: ./internal/amqp/publisher/Dockerfile
+    image: scheduler:develop
+    container_name: scheduler-app
+    environment:
+      AMQP_SOURCE: "amqp://guest:guest@rabbitmq:5672/"
+      STORAGE_SOURCE: "postgres://alex:secret@calendardb:5432/calendar?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    command: ./app/scheduler -config=/configs/scheduler_config.toml
+    restart: on-failure
+
+  sender:
+    build:
+      context: ../.
+      dockerfile: ./internal/amqp/consumer/Dockerfile
+    image: sender:develop
+    container_name: sender-app
+    environment:
+      AMQP_SOURCE: "amqp://guest:guest@rabbitmq:5672/"
+      STORAGE_SOURCE: "postgres://alex:secret@calendardb:5432/calendar?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      scheduler:
+        condition: service_started
+    command: ./app/sender -config=/configs/sender_config.toml
+    restart: on-failure
+    
+volumes:
+  pgdata:

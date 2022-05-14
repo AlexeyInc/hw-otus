@@ -35,8 +35,8 @@ type AMQPConf struct {
 }
 
 type SchedulerConf struct {
-	CheckNotificationFreqMinutes  int
-	CheckExpiredEventsFreqMinutes int
+	CheckNotificationFreqSeconds  int
+	CheckExpiredEventsFreqSeconds int
 }
 
 func NewConfig(fullPath string) (config Config, err error) {
@@ -44,6 +44,9 @@ func NewConfig(fullPath string) (config Config, err error) {
 	viper.AddConfigPath(pathToFile)
 	viper.SetConfigName(fileName)
 	viper.SetConfigType(fileType)
+
+	replacer := strings.NewReplacer(".", "_")
+	viper.SetEnvKeyReplacer(replacer)
 
 	viper.AutomaticEnv()
 

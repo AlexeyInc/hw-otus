@@ -2,6 +2,7 @@ package internalgrpc
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 
@@ -34,6 +35,8 @@ func RunGRPCServer(context context.Context, config calendarconfig.Config, app ap
 
 	go func() {
 		logger.Info("calendar gRPC server is running...")
+		fmt.Println("calendar gRPC server is running..")
+
 		if err = gRPCServer.Serve(l); err != nil {
 			log.Fatal("can't run server: ", err)
 		}
@@ -42,6 +45,7 @@ func RunGRPCServer(context context.Context, config calendarconfig.Config, app ap
 	<-context.Done()
 
 	gRPCServer.GracefulStop()
+	fmt.Println("gRPC server closed.")
 }
 
 func NewServer(context context.Context,

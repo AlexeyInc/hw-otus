@@ -6,7 +6,7 @@ create table events (
     description        text,
     id_user            bigint not null,
     notification       timestamp,
-    notificationSended boolean default false
+    notificationStatus int default 0
 );
 
 create table users (
@@ -19,3 +19,6 @@ alter table events add foreign key (id_user) references users (id);
 create index on events (id_user);
 
 insert into users (nickname) values ('Alice'), ('Bob');
+
+insert into events (title, start_event, end_event, description, id_user, notification, notificationStatus)
+ values ('default_title', '2022-07-01 06:30:30', '2022-08-01 06:30:30', 'test_event', 1, '2022-07-01 06:30:30', 0);

@@ -43,11 +43,11 @@ func main() {
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer cancel()
 
 	storage := sqlstorage.New(config)
 	if err := storage.Connect(ctx); err != nil {
 		zapLogg.Info("connection to database failed: " + err.Error())
-		cancel()
 		return
 	}
 	defer storage.Close(ctx)

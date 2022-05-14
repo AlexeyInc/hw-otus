@@ -35,19 +35,19 @@ func main() {
 
 	scheduler.SetupAMQP(*exchangeName, *exchangeType, *queueName, *bindingKey)
 
-	context, cancel := signal.NotifyContext(context.Background(),
+	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer cancel()
 
-	if err := scheduler.Storage.Connect(context); err != nil {
+	if err = scheduler.Storage.Connect(ctx); err != nil {
 		failOnError(err, "can't connect to database")
-		cancel()
 	}
 
-	go scheduler.ProccesEventNotifications(context, *exchangeName, *routingKey)
+	go scheduler.ProccesEventNotifications(ctx, *exchangeName, *routingKey)
 
-	go scheduler.DeleteExpiredEvents(context)
+	go scheduler.DeleteExpiredEvents(ctx)
 
-	<-context.Done()
+	<-ctx.Done()
 
 	log.Println("\nFinishing publishing...")
 }

@@ -69,7 +69,7 @@ func (s *CalendarSuite) SetupSuite() {
 
 	s.calendarStorage = sqlcstorage.New(s.sqlDB)
 
-	timeSleep := os.Getenv("CHECK_NOTIFICATION_SEC")
+	timeSleep := os.Getenv("SCHEDULER_CHECKNOTIFICATIONFREQSECONDS")
 	if timeSleep == "" {
 		checkEventsNotifFreq = 3
 		return

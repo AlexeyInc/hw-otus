@@ -1,4 +1,4 @@
-## Домашние задания курса [OTUS «Разработчик Golang»](https://otus.ru/lessons/golang-professional/?utm_source=github&utm_medium=free&utm_campaign=otus)
+## Домашние задания курса «Golang Professional»
 1) [«Hello, OTUS!»](./hw01_hello_otus)
 2) [«Распаковка строки»](./hw02_unpack_string)
 3) [«Частотный анализ»](./hw03_frequency_analysis)
@@ -17,16 +17,3 @@
 16) [«Проект»](https://github.com/OtusGolang/final_project)
 
 ---
-[Инструкция по сдаче ДЗ](https://github.com/OtusGolang/home_work/wiki#%D0%A1%D1%82%D1%83%D0%B4%D0%B5%D0%BD%D1%82%D0%B0%D0%BC).
-
----
-Используемая версия [golangci-lint](https://golangci-lint.run/usage/install/#other-ci): <b>v1.41.1</b>
-```
-$ golangci-lint version
-golangci-lint has version 1.41.1 built from a2074809 on 2021-06-19T16:01:50Z
-```
-
----
-Авторы ДЗ:
-- [Дмитрий Смаль](https://github.com/mialinx)
-- [Антон Телышев](https://github.com/Antonboom)
